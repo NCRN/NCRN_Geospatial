@@ -5,7 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{92edac8b-737a-48a0-9813-6143cc84c61d}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>dataImportWorkspace.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -20,7 +21,6 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="dataImportWorkspace.py" />
     <Compile Include="Downloading\downloadData_v2.py" />
   </ItemGroup>
   <ItemGroup>

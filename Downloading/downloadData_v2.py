@@ -73,10 +73,10 @@ def download_url_wget(out_dir, url_list):
 
 ########### TESTING ##########
 ## Full list of NWI URLs for testing
-##wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
-##                r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
-##                r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip',
-##                r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip']
+#wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
+#                r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
+#                r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip',
+#                r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip']
 
 ## Partial list of NWI URLs for testing
 #wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip']
@@ -86,8 +86,8 @@ def download_url_wget(out_dir, url_list):
 
 
 ## Test get_file_size_requests on list or ZIP URLs
-##for url in wetland_urls:
-##    print(get_file_size_requests(url))
+#for url in wetland_urls:
+#    print(get_file_size_requests(url))
 
 ## Test download_url_wget on NWI Wetlands ZIP URLs
 #download_url_wget(out_dir, wetland_urls)
@@ -95,19 +95,33 @@ def download_url_wget(out_dir, url_list):
 
 ########## DOWNLOAD ALL URLs SCRIPT ##########
 
-# List of NHD Plus URLs for download
-NHDPlus_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0207_HU4_GDB.zip', 
+##### NHD Plus #####
+
+# Full list of nhd plus urls for download
+nhdplus_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0207_HU4_GDB.zip', 
                 r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0206_HU4_GDB.zip']
 
-# Out directory for NHD Plus downloads
-NHDPlus_out_dir = r'Basedata\Vector\Water\NHDPlusHR'
+## Out directory for downloads
+#nhdplus_out_dir = r''
 
-# Test get_file_size_requests on list
-#for url in NHDPlus_urls:
-    print(get_file_size_requests(NHDPlus_urls))
+# Test get_file_size_requests on list or ZIP URLs
+for url in nhdplus_urls:
+    print(get_file_size_requests(url))
 
-# Test download_url_wget on NWI Wetlands ZIP URLs
-download_url_wget(out_dir, wetland_urls)
+## download_url_wget on nhd plus zip urls
+#download_url_wget(nhdplus_out_dir, nhdplus_urls)
 
-# download_url_wget on NHD Plus ZIP URLs
-download_url_wget(out_dir, wetland_urls)
+##### TIGER Census #####
+
+## Partial list of tiger urls for download
+tiger_urls = [r'https://www2.census.gov/geo/tiger/TGRGDB22/tlgdb_2022_a_us_substategeo.gdb.zip']
+
+## out directory for nhd plus downloads
+#tiger_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading'
+
+# get_file_size_requests on list of nhd plus downloads. THERE IS AN ISSUE WITH THIS FILE?
+for urls in tiger_urls:
+    print(get_file_size_requests(urls))
+
+## download_url_wget on nhd plus zip urls
+#download_url_wget(tiger_out_dir, tiger_urls)
