@@ -82,7 +82,7 @@ def download_url_wget(out_dir, url_list):
 #wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip']
 
 ## Out directory for testing downloads
-#out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading'
+#out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 
 ## Test get_file_size_requests on list or ZIP URLs
@@ -95,7 +95,7 @@ def download_url_wget(out_dir, url_list):
 
 ########## DOWNLOAD ALL URLs SCRIPT ##########
 
-##### NHD Plus #####
+##### NHD Plus HR #####
 
 # Full list of nhd plus urls for download
 nhdplus_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0207_HU4_GDB.zip', 
@@ -111,17 +111,67 @@ for url in nhdplus_urls:
 ## download_url_wget on nhd plus zip urls
 #download_url_wget(nhdplus_out_dir, nhdplus_urls)
 
-##### TIGER Census #####
+##### TIGER Census Boundaries #####
 
 ## Partial list of tiger urls for download
 tiger_urls = [r'https://www2.census.gov/geo/tiger/TGRGDB22/tlgdb_2022_a_us_substategeo.gdb.zip']
 
-## out directory for nhd plus downloads
-#tiger_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading'
+### out directory for tiger downloads
+#tiger_out_dir = r''
 
-# get_file_size_requests on list of nhd plus downloads. THERE IS AN ISSUE WITH THIS FILE?
-for urls in tiger_urls:
-    print(get_file_size_requests(urls))
+## cannot get_file_size_requests on list of nhd plus downloads. error
 
-## download_url_wget on nhd plus zip urls
+### download_url_wget on nhd plus zip urls
 #download_url_wget(tiger_out_dir, tiger_urls)
+
+##### Open Street Map #####
+# Full list of OSM geofabrik urls for download
+osm_urls = [r'http://download.geofabrik.de/north-america/us/district-of-columbia-latest-free.shp.zip', 
+            r'http://download.geofabrik.de/north-america/us/maryland-latest-free.shp.zip',
+            r'http://download.geofabrik.de/north-america/us/virginia-latest-free.shp.zip',
+            r'http://download.geofabrik.de/north-america/us/west-virginia-latest-free.shp.zip']
+
+## Out directory for downloads
+#osm_out_dir = r''
+
+# Test get_file_size_requests on list or ZIP URLs
+for url in osm_urls:
+    print(get_file_size_requests(url))
+
+### download_url_wget on osm zip urls
+#download_url_wget(osm_out_dir, osm_urls)
+
+##### NED #####
+# Full list of NED urls for download
+ned_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/historical/n40w079/USGS_13_n40w079_20220429.tif', 
+            r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/historical/n40w078/USGS_13_n40w078_20220429.tif',
+            r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/historical/n40w077/USGS_13_n40w077_20220524.tif',
+            r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/historical/n39w078/USGS_13_n39w078_20220524.tif',
+            r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/historical/n39w077/USGS_13_n39w077_20220713.tif']
+
+## Out directory for downloads
+#ned_out_dir = r''
+
+# Test get_file_size_requests on list or ZIP URLs
+for url in ned_urls:
+    print(get_file_size_requests(url))
+
+### download_url_wget on ned zip urls
+#download_url_wget(ned_out_dir, ned_urls)
+
+##### NWI #####
+# Full list of NWI urls for download
+nwi_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
+            r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
+            r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip',
+            r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip']
+
+## Out directory for downloads
+#nwi_out_dir = r''
+
+# Test get_file_size_requests on list or ZIP URLs
+for url in nwi_urls:
+    print(get_file_size_requests(url))
+
+### download_url_wget on nwi zip urls
+#download_url_wget(nwi_out_dir, nwi_urls)
