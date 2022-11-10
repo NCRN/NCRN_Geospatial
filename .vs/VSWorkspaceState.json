@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Downloading"
   ],
-  "SelectedNode": "\\test.dat",
+  "SelectedNode": "\\Downloading\\downloadData_v2.py",
   "PreviewInSolutionExplorer": false
 }
