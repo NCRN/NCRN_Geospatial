@@ -98,45 +98,45 @@ def download_url_wget(out_dir, url_list):
 ##### NHD Plus HR #####
 
 # Full list of nhd plus urls for download
-nhdplus_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0207_HU4_GDB.zip', 
+nhdplus_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0207_HU4_GDB.zip',
                 r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHDPlusHR/Beta/GDB/NHDPLUS_H_0206_HU4_GDB.zip']
 
 ## Out directory for downloads
 #nhdplus_out_dir = r''
 
-# Test get_file_size_requests on list or ZIP URLs
-for url in nhdplus_urls:
-    print(get_file_size_requests(url))
+## test get_file_size_requests on list or zip urls
+#for url in nhdplus_urls:
+#    print(get_file_size_requests(url))
 
 ## download_url_wget on nhd plus zip urls
 #download_url_wget(nhdplus_out_dir, nhdplus_urls)
 
 ##### TIGER Census Boundaries #####
 
-## Partial list of tiger urls for download
+## Full list of tiger urls for download
 tiger_urls = [r'https://www2.census.gov/geo/tiger/TGRGDB22/tlgdb_2022_a_us_substategeo.gdb.zip']
 
 ### out directory for tiger downloads
 #tiger_out_dir = r''
 
-## cannot get_file_size_requests on list of nhd plus downloads. error
+## cannot get_file_size_requests on list of tiger downloads.
 
 ### download_url_wget on nhd plus zip urls
 #download_url_wget(tiger_out_dir, tiger_urls)
 
 ##### Open Street Map #####
 # Full list of OSM geofabrik urls for download
-osm_urls = [r'http://download.geofabrik.de/north-america/us/district-of-columbia-latest-free.shp.zip', 
-            r'http://download.geofabrik.de/north-america/us/maryland-latest-free.shp.zip',
-            r'http://download.geofabrik.de/north-america/us/virginia-latest-free.shp.zip',
-            r'http://download.geofabrik.de/north-america/us/west-virginia-latest-free.shp.zip']
+osm_urls = [r'http://download.geofabrik.de/north-america/us/district-of-columbia-latest-free.shp.zip', #dc
+            r'http://download.geofabrik.de/north-america/us/maryland-latest-free.shp.zip', #md
+            r'http://download.geofabrik.de/north-america/us/virginia-latest-free.shp.zip', #va
+            r'http://download.geofabrik.de/north-america/us/west-virginia-latest-free.shp.zip'] #wv
 
 ## Out directory for downloads
 #osm_out_dir = r''
 
-# Test get_file_size_requests on list or ZIP URLs
-for url in osm_urls:
-    print(get_file_size_requests(url))
+## Test get_file_size_requests on list or ZIP URLs
+#for url in osm_urls:
+#    print(get_file_size_requests(url))
 
 ### download_url_wget on osm zip urls
 #download_url_wget(osm_out_dir, osm_urls)
@@ -152,26 +152,113 @@ ned_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/
 ## Out directory for downloads
 #ned_out_dir = r''
 
-# Test get_file_size_requests on list or ZIP URLs
-for url in ned_urls:
-    print(get_file_size_requests(url))
+## Test get_file_size_requests on list or ZIP URLs
+#for url in ned_urls:
+#    print(get_file_size_requests(url))
 
 ### download_url_wget on ned zip urls
 #download_url_wget(ned_out_dir, ned_urls)
 
 ##### NWI #####
 # Full list of NWI urls for download
-nwi_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
-            r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
-            r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip',
-            r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip']
+nwi_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', #dc
+            r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip', #md
+            r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip', #va
+            r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip'] #wv
 
 ## Out directory for downloads
 #nwi_out_dir = r''
 
 # Test get_file_size_requests on list or ZIP URLs
-for url in nwi_urls:
-    print(get_file_size_requests(url))
+#for url in nwi_urls:
+#    print(get_file_size_requests(url))
 
 ### download_url_wget on nwi zip urls
 #download_url_wget(nwi_out_dir, nwi_urls)
+
+##### USGS Gauge Locations #####
+## Full list of usgs urls for download
+usgs_urls = [r'https://water.usgs.gov/GIS/dsdl/gagesII_9322_point_shapefile.zip'] 
+
+## Out directory for downloads
+#usgs_out_dir = r''
+
+## Test get_file_size_requests on list or ZIP URLs
+#for url in usgs_urls:
+#    print(get_file_size_requests(url))
+
+### download_url_wget on usgs zip urls
+#download_url_wget(usgs_out_dir, usgs_urls)
+
+##### EPA (303d, NPDES, and WATERS) #####
+# Full list of EPA urls for download
+epa_urls = [r'https://www.epa.gov/sites/default/files/2015-08/rad_303d_20150501_fgdb.zip', #303d
+            r'https://echo.epa.gov/files/echodownloads/npdes_outfalls_layer.zip', #npdes
+            r'https://watersgeo.epa.gov/GEOSPATIALDOWNLOADS/ATTAINS_Assessment_20220809_fgdb.zip'] #waters
+
+## Out directory for downloads
+#epa_out_dir = r''
+
+## Test get_file_size_requests on list or ZIP URLs
+#for url in epa_urls:
+#    print(get_file_size_requests(url))
+
+### download_url_wget on usgs zip urls
+#download_url_wget(epa_out_dir, epa_urls)
+
+##### SSURGO #####
+# Full list of SSURGO urls for download
+ssurgo_urls = [r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_DC001_soildb_US_2003_[2022-09-14].zip', #dc
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD017_soildb_US_2003_[2022-09-14].zip', #charles
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD033_soildb_US_2003_[2022-09-14].zip', #prince george's
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD003_soildb_US_2003_[2022-09-14].zip', #anne arundel
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD031_soildb_US_2003_[2022-09-14].zip', #montgomery
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD021_soildb_US_2003_[2022-09-14].zip', #frederick
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD043_soildb_US_2003_[2022-09-14].zip', #washington
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_MD001_soildb_US_2003_[2022-09-14].zip', #allegany
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_VA179_soildb_US_2003_[2022-08-22].zip', #stafford
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_VA153_soildb_US_2003_[2022-08-22].zip', #prince william
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_VA059_soildb_US_2003_[2022-08-26].zip', #fairfax
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_VA510_soildb_US_2003_[2022-08-22].zip', #alexandria
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_VA013_soildb_US_2003_[2022-08-23].zip', #arlington
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_VA107_soildb_US_2003_[2022-08-30].zip', #loudoun
+               r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/SSA/wss_SSA_WV037_soildb_WV_2003_[2022-09-09].zip'] #jefferson
+                
+## Out directory for ssurgo downloads
+#ssurgo_out_dir = r''
+
+## cannot get_file_size_requests on list of ssurgo downloads.
+
+## download_url_wget on ssurgo zip urls
+#download_url_wget(ssurgo_out_dir, ssurgo_urls)
+
+##### STATSGO2 #####
+# Full list of statsgo2 urls for download
+statsgo2_urls = [r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_DC_[2016-10-13].zip', #dc
+                 r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_MD_[2016-10-13].zip', #md
+                 r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_VA_[2016-10-13].zip', #va
+                 r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_WV_[2016-10-13].zip'] #wv
+
+## Out directory for ssurgo downloads
+#statsgo2_out_dir = r''
+
+## cannot get_file_size_requests on list of statsgo2 downloads.
+
+## download_url_wget on usgs zip urls
+#download_url_wget(statsgo2_out_dir, statsgo2_urls)
+
+##### HIFLD #####
+# Full list of hifld urls for download
+hifld_urls = [r'https://nps.maps.arcgis.com/sharing/rest/content/items/82ac410d9d9042788e29762f0a57f77b/data']
+
+## Out directory for hifld downloads
+#hifld_out_dir = r''
+
+## cannot get_file_size_requests on list of HIFLD downloads.
+
+## Test get_file_size_requests on list or ZIP URLs
+#for url in hifld_urls:
+#    print(get_file_size_requests(url))
+
+## download_url_wget on hifld zip urls
+#download_url_wget(hifld_out_dir, hifld_urls)
