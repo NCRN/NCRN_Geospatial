@@ -5,6 +5,9 @@ import datetime
 import requests
 import wget
 
+_FGDB_EXT = r'.gdb'
+_ROOT_DIR = r'C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS'
+
 def get_file_size_requests(url):
     """
     Utility function to get the size of a file at a URL using requests library.
@@ -39,7 +42,32 @@ def download_progress_bar_custom(current, total, width=80):
     if int(int(current) / int(total) * 100) % 10 == 0:
         print("Downloading: {0}% [{1} / {2}] bytes".format(current / total * 100, current, total))
 
-def download_url_wget(out_dir, url_list):
+def download_url_wget(out_dir, url):
+    """
+    Utility function to download a file via URL using wget library.
+        NOTE: May not work on all URLs. Tends to work best on files with explicit endpoint on the web.
+
+    Keyword arguments:
+    out_dir -- The full filepath to destination directory to download things to in string format.
+        Example: r'C:\GIS'
+    url -- A single URL.
+        Example:    r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip'
+    """
+
+    # Create a datetime object for current date/time before download
+    start_dtm = datetime.datetime.now()
+    # Print status to Python console with start time
+    print("The file is downloading.....Please be patient!\nStart time: {0}\n".format(str(datetime.datetime.time(start_dtm))))        
+    # Call the wget.download function with the url and output directory as variables
+    wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
+    # Create a datetime object for current date/time after download
+    end_dtm = datetime.datetime.now()
+    # Create a variable to store the time elapsed during download
+    diff_dtm = end_dtm - start_dtm
+    # Print status to Python console with where the file was downloaded and how long it took
+    print("The file downloaded to: {0}.\nDownload time: {1}".format(out_dir,str(diff_dtm)))
+        
+def download_url_list_wget(out_dir, url_list):
     """
     Utility function to download a list of files via URL using wget library.
         NOTE: May not work on all URLs. Tends to work best on files with explicit endpoint on the web.
@@ -55,17 +83,7 @@ def download_url_wget(out_dir, url_list):
     # Loop over the list of urls
     for url in url_list:
         # Create a datetime object for current date/time before download
-        start_dtm = datetime.datetime.now()
-        # Print status to Python console with start time
-        print("The file is downloading.....Please be patient!\nStart time: {0}\n".format(str(datetime.datetime.time(start_dtm))))        
-        # Call the wget.download function with the url and output directory as variables
-        wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
-        # Create a datetime object for current date/time after download
-        end_dtm = datetime.datetime.now()
-        # Create a variable to store the time elapsed during download
-        diff_dtm = end_dtm - start_dtm
-        # Print status to Python console with where the file was downloaded and how long it took
-        print("The file downloaded to: {0}.\nDownload time: {1}".format(out_dir,str(diff_dtm)))
+        download_url_wget(out_dir, url)
 
 
 ########### TESTING ##########
