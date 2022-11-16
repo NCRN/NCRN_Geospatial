@@ -134,7 +134,7 @@ osm_urls = [r'http://download.geofabrik.de/north-america/us/district-of-columbia
             r'http://download.geofabrik.de/north-america/us/west-virginia-latest-free.shp.zip'] #wv
 
 ## Out directory for downloads
-#osm_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
+osm_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## Test get_file_size_requests on list or ZIP URLs
 for url in osm_urls:
@@ -262,3 +262,18 @@ for url in hifld_urls:
 
 ## download_url_wget on hifld zip urls
 #download_url_wget(hifld_out_dir, hifld_urls)
+
+##### FEMA #####
+# Full list of fema urls for download
+fema_urls = [r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_DC_[2016-10-13].zip', #dc
+             r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_MD_[2016-10-13].zip', #md
+             r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_VA_[2016-10-13].zip', #va
+             r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_WV_[2016-10-13].zip'] #wv
+
+## Out directory for fema downloads
+#fema_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
+
+## cannot get_file_size_requests on list of fema downloads.
+
+## download_url_wget on fema zip urls
+#download_url_wget(fema_out_dir, fema_urls)
