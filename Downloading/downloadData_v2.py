@@ -4,6 +4,25 @@
 import datetime 
 import requests
 import wget
+import pandas as pd
+
+###Read excel into dataframe using Pandas
+df_NCRN_GIS_Data_Sources = pd.read_excel(r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx', sheet_name='Sources')
+
+print(df_NCRN_GIS_Data_Sources)
+
+##Index dataframe
+{key:value,}
+IF IS ZIP == 'Yes'
+    THEN READ ROWS INTO A DICTIONARY TO LOOP OVER FOR WGET DOWNLOAD
+{ID:['download_link','destination_folder'],ID:['download_link','destination_folder']}
+for k, v in zip_dict.iteritems():
+    DO THE DOWNLOAD
+    dest_folder = os.path.join(_ROOT_DIR,v[1])
+    url = v[0]
+    CALL WGET WITH down_link and dest_folder
+    download_url_wget(dest_folder, url)
+C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS\NPS_National_Data
 
 def get_file_size_requests(url):
     """
@@ -67,7 +86,6 @@ def download_url_wget(out_dir, url_list):
         # Print status to Python console with where the file was downloaded and how long it took
         print("The file downloaded to: {0}.\nDownload time: {1}".format(out_dir,str(diff_dtm)))
 
-
 ########### TESTING ##########
 ## Full list of NWI URLs for testing
 #wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
@@ -107,8 +125,8 @@ nhdplus_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NH
 #nhdplus_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## test get_file_size_requests on list or zip urls
-for url in nhdplus_urls:
-    print('nhdplus', get_file_size_requests(url))
+#for url in nhdplus_urls:
+#    print('nhdplus', get_file_size_requests(url))
 
 ## download_url_wget on nhd plus zip urls
 #download_url_wget(nhdplus_out_dir, nhdplus_urls)
@@ -134,11 +152,11 @@ osm_urls = [r'http://download.geofabrik.de/north-america/us/district-of-columbia
             r'http://download.geofabrik.de/north-america/us/west-virginia-latest-free.shp.zip'] #wv
 
 ## Out directory for downloads
-osm_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
+#osm_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## Test get_file_size_requests on list or ZIP URLs
-for url in osm_urls:
-    print('osm', get_file_size_requests(url))
+#for url in osm_urls:
+#    print('osm', get_file_size_requests(url))
 
 ## download_url_wget on osm zip urls
 #download_url_wget(osm_out_dir, osm_urls)
@@ -155,8 +173,8 @@ ned_urls = [r'https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/13/TIFF/
 #ned_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## Test get_file_size_requests on list or ZIP URLs
-for url in ned_urls:
-    print('ned', get_file_size_requests(url))
+#for url in ned_urls:
+#    print('ned', get_file_size_requests(url))
 
 ## download_url_wget on ned zip urls
 #download_url_wget(ned_out_dir, ned_urls)
@@ -172,8 +190,8 @@ nwi_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wet
 #nwi_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 # Test get_file_size_requests on list or ZIP URLs
-for url in nwi_urls:
-    print('nwi', get_file_size_requests(url))
+#for url in nwi_urls:
+#    print('nwi', get_file_size_requests(url))
 
 ## download_url_wget on nwi zip urls
 #download_url_wget(nwi_out_dir, nwi_urls)
@@ -186,8 +204,8 @@ usgs_urls = [r'https://water.usgs.gov/GIS/dsdl/gagesII_9322_point_shapefile.zip'
 #usgs_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## Test get_file_size_requests on list or ZIP URLs
-for url in usgs_urls:
-    print('usgs', get_file_size_requests(url))
+#for url in usgs_urls:
+#    print('usgs', get_file_size_requests(url))
 
 ## download_url_wget on usgs zip urls
 #download_url_wget(usgs_out_dir, usgs_urls)
@@ -202,8 +220,8 @@ epa_urls = [r'https://www.epa.gov/sites/default/files/2015-08/rad_303d_20150501_
 #epa_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## Test get_file_size_requests on list or ZIP URLs
-for url in epa_urls:
-    print('epa', get_file_size_requests(url))
+#for url in epa_urls:
+#    print('epa', get_file_size_requests(url))
 
 ## download_url_wget on usgs zip urls
 #download_url_wget(epa_out_dir, epa_urls)
@@ -257,23 +275,8 @@ hifld_urls = [r'https://nps.maps.arcgis.com/sharing/rest/content/items/82ac410d9
 #hifld_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
 
 ## Test get_file_size_requests on list or ZIP URLs
-for url in hifld_urls:
-    print('hifld', get_file_size_requests(url))
+#for url in hifld_urls:
+#    print('hifld', get_file_size_requests(url))
 
 ## download_url_wget on hifld zip urls
 #download_url_wget(hifld_out_dir, hifld_urls)
-
-##### FEMA #####
-# Full list of fema urls for download
-fema_urls = [r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_DC_[2016-10-13].zip', #dc
-             r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_MD_[2016-10-13].zip', #md
-             r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_VA_[2016-10-13].zip', #va
-             r'https://websoilsurvey.sc.egov.usda.gov/DSD/Download/Cache/STATSGO2/wss_gsmsoil_WV_[2016-10-13].zip'] #wv
-
-## Out directory for fema downloads
-#fema_out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
-
-## cannot get_file_size_requests on list of fema downloads.
-
-## download_url_wget on fema zip urls
-#download_url_wget(fema_out_dir, fema_urls)
