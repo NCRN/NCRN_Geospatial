@@ -7,22 +7,25 @@ import wget
 import pandas as pd
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx', sheet_name='Sources')
+df_NCRN_GIS_Data_Sources = pd.read_excel(r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx', sheet_name='Sources', usecols=['ID', 'Status', 'Is Zip', 'Web File for Download', 'Local Directory'])
 
-print(df_NCRN_GIS_Data_Sources)
+##Select sources where Status = Ready
+df_NCRN_GIS_Data_Sources_ready = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='Ready']
+
+#print(df_NCRN_GIS_Data_Sources_ready)
 
 ##Index dataframe
-{key:value,}
-IF IS ZIP == 'Yes'
-    THEN READ ROWS INTO A DICTIONARY TO LOOP OVER FOR WGET DOWNLOAD
-{ID:['download_link','destination_folder'],ID:['download_link','destination_folder']}
-for k, v in zip_dict.iteritems():
-    DO THE DOWNLOAD
-    dest_folder = os.path.join(_ROOT_DIR,v[1])
-    url = v[0]
-    CALL WGET WITH down_link and dest_folder
-    download_url_wget(dest_folder, url)
-C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS\NPS_National_Data
+#{key:value,}
+#IF IS ZIP == 'Yes'
+#    THEN READ ROWS INTO A DICTIONARY TO LOOP OVER FOR WGET DOWNLOAD
+#{ID:['download_link','destination_folder'],ID:['download_link','destination_folder']}
+#for k, v in zip_dict.iteritems():
+#    DO THE DOWNLOAD
+#    dest_folder = os.path.join(_ROOT_DIR,v[1])
+#    url = v[0]
+#    CALL WGET WITH down_link and dest_folder
+#    download_url_wget(dest_folder, url)
+#C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS\NPS_National_Data
 
 def get_file_size_requests(url):
     """
