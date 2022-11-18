@@ -1,28 +1,73 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Initial working script for downloading GIS data and formatting the NCRN GIS Library.
+--------------------------------------------------------------------------------
+TODO: Add more of a complete description (once the MVP is working and refactored.)
+
+References:
 # https://stackoverflow.com/questions/72088811/how-to-download-a-large-zip-file-25-gb-using-python
 # https://stackoverflow.com/questions/37573483/progress-bar-while-download-file-over-http-with-requests
+"""
 
-import datetime 
+#__author__ = "NCRN GIS Unit"
+#__copyright__ = "None"
+#__credits__ = [""]
+#__license__ = "GPL"
+#__version__ = "1.0.1"
+#__maintainer__ = "David Jones"
+#__email__ = "david_jones@nps.gov"
+#__status__ = "Staging"
+
+
+# Import statements for utilized libraries / packages
+import datetime
+import os
+import pandas as pd
 import requests
 import wget
-import pandas as pd
 
-###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx', sheet_name='Sources')
 
-print(df_NCRN_GIS_Data_Sources)
+"""
+Set various global variables. Some of these could be parameterized to be used in an 
+ArcGIS Toolbox script and/or command line use. 
+Some of these global variables may not be in use yet.
+"""
 
-##Index dataframe
-{key:value,}
-IF IS ZIP == 'Yes'
-    THEN READ ROWS INTO A DICTIONARY TO LOOP OVER FOR WGET DOWNLOAD
-{ID:['download_link','destination_folder'],ID:['download_link','destination_folder']}
-for k, v in zip_dict.iteritems():
-    DO THE DOWNLOAD
-    dest_folder = os.path.join(_ROOT_DIR,v[1])
-    url = v[0]
-    CALL WGET WITH down_link and dest_folder
-    download_url_wget(dest_folder, url)
-C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS\NPS_National_Data
+# Set the directory path to the root directory that will be documented
+__WORKSPACE = r'U:\GIS'
+
+# Set the directory path to the root directory that will be documented
+__ROOT_DIR = r'C:\Users\dgjones\DOI\NCRN Data Management - GIS\Test-Download'
+
+# Create a variable to store the file extension for file geodatabases
+__FGDB_EXT = '.gdb'
+
+# Create a variable to store the file extension for shapefiles
+__SHP_EXT = '.shp'
+
+# Create a list variable to store file extensions to be ignored
+__EXCLUDE_EXT = ['lock', 'gdbindexes', 'gdbtable', 'gdbtablx', 'horizon', 'spx', 'freelist', 'atx'] # Logical variable to parameterize for toolbox and/or command line (maybe)
+
+# Create a list variable to store the file extensions for rasters (that are outside of FGDBs)
+__RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logical variable to parameterize for toolbox and/or command line
+
+# Create a variable to store the full path to the GIS Library sources Excel file
+__XCEL_LIBRARY = r'C:\Users\dgjones\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx'
+
+###Index dataframe
+#{key:value,}
+#IF IS ZIP == 'Yes'
+#    THEN READ ROWS INTO A DICTIONARY TO LOOP OVER FOR WGET DOWNLOAD
+#{ID:['download_link','destination_folder'],ID:['download_link','destination_folder']}
+#for k, v in zip_dict.iteritems():
+#    DO THE DOWNLOAD
+#    dest_folder = os.path.join(_ROOT_DIR,v[1])
+#    url = v[0]
+#    CALL WGET WITH down_link and dest_folder
+#    download_url_wget(dest_folder, url)
+#C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS\NPS_National_Data
 
 def get_file_size_requests(url):
     """
@@ -58,7 +103,32 @@ def download_progress_bar_custom(current, total, width=80):
     if int(int(current) / int(total) * 100) % 10 == 0:
         print("Downloading: {0}% [{1} / {2}] bytes".format(current / total * 100, current, total))
 
-def download_url_wget(out_dir, url_list):
+def download_url_wget(out_dir, url):
+    """
+    Utility function to download a file via URL using wget library.
+        NOTE: May not work on all URLs. Tends to work best on files with explicit endpoint on the web.
+
+    Keyword arguments:
+    out_dir -- The full filepath to destination directory to download things to in string format.
+        Example: r'C:\GIS'
+    url -- A single URLs
+        Example:    r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip'
+    """
+
+    # Create a datetime object for current date/time before download
+    start_dtm = datetime.datetime.now()
+    # Print status to Python console with start time
+    print("The file is downloading.....Please be patient!\nStart time: {0}\n".format(str(datetime.datetime.time(start_dtm))))        
+    # Call the wget.download function with the url and output directory as variables
+    wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
+    # Create a datetime object for current date/time after download
+    end_dtm = datetime.datetime.now()
+    # Create a variable to store the time elapsed during download
+    diff_dtm = end_dtm - start_dtm
+    # Print status to Python console with where the file was downloaded and how long it took
+    print("The file downloaded to: {0}.\nDownload time: {1}".format(out_dir,str(diff_dtm)))
+
+def download_url_list_wget(out_dir, url_list):
     """
     Utility function to download a list of files via URL using wget library.
         NOTE: May not work on all URLs. Tends to work best on files with explicit endpoint on the web.
@@ -73,20 +143,26 @@ def download_url_wget(out_dir, url_list):
 
     # Loop over the list of urls
     for url in url_list:
-        # Create a datetime object for current date/time before download
-        start_dtm = datetime.datetime.now()
-        # Print status to Python console with start time
-        print("The file is downloading.....Please be patient!\nStart time: {0}\n".format(str(datetime.datetime.time(start_dtm))))        
-        # Call the wget.download function with the url and output directory as variables
-        wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
-        # Create a datetime object for current date/time after download
-        end_dtm = datetime.datetime.now()
-        # Create a variable to store the time elapsed during download
-        diff_dtm = end_dtm - start_dtm
-        # Print status to Python console with where the file was downloaded and how long it took
-        print("The file downloaded to: {0}.\nDownload time: {1}".format(out_dir,str(diff_dtm)))
+        download_url_wget(out_dir, url)
 
 ########### TESTING ##########
+
+###Read excel into dataframe using Pandas
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Is Zip', 'Web File for Download', 'Local Directory'])
+
+#print(df_NCRN_GIS_Data_Sources)
+
+##Select sources where Status = Ready
+df_NCRN_GIS_Data_Sources_ready = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='Ready']
+
+for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
+    dest_folder = os.path.join(__ROOT_DIR, row['Local Directory'])
+    url = row['Web File for Download']
+    download_url_wget(dest_folder, url)
+
+#print(df_NCRN_GIS_Data_Sources_ready)
+
+
 ## Full list of NWI URLs for testing
 #wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
 #                r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
