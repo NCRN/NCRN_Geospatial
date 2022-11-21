@@ -26,7 +26,9 @@ import datetime
 import os
 import pandas as pd
 import requests
+import shutil
 import wget
+from zipfile import ZipFile
 
 
 """
@@ -39,7 +41,7 @@ Some of these global variables may not be in use yet.
 __WORKSPACE = r'U:\GIS'
 
 # Set the directory path to the root directory that will be documented
-__ROOT_DIR = r'C:\Users\dgjones\DOI\NCRN Data Management - GIS\Test-Download'
+__ROOT_DIR = r'C:\_GIS\DOWNLOAD'
 
 # Create a variable to store the file extension for file geodatabases
 __FGDB_EXT = '.gdb'
@@ -55,19 +57,6 @@ __RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logica
 
 # Create a variable to store the full path to the GIS Library sources Excel file
 __XCEL_LIBRARY = r'C:\Users\dgjones\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx'
-
-###Index dataframe
-#{key:value,}
-#IF IS ZIP == 'Yes'
-#    THEN READ ROWS INTO A DICTIONARY TO LOOP OVER FOR WGET DOWNLOAD
-#{ID:['download_link','destination_folder'],ID:['download_link','destination_folder']}
-#for k, v in zip_dict.iteritems():
-#    DO THE DOWNLOAD
-#    dest_folder = os.path.join(_ROOT_DIR,v[1])
-#    url = v[0]
-#    CALL WGET WITH down_link and dest_folder
-#    download_url_wget(dest_folder, url)
-#C:\Users\dgjones\DOI\NCRN Data Management - GIS\GIS\NPS_National_Data
 
 def get_file_size_requests(url):
     """
@@ -118,7 +107,7 @@ def download_url_wget(out_dir, url):
     # Create a datetime object for current date/time before download
     start_dtm = datetime.datetime.now()
     # Print status to Python console with start time
-    print("The file is downloading.....Please be patient!\nStart time: {0}\n".format(str(datetime.datetime.time(start_dtm))))        
+    print("'{0}' is downloading...Please be patient!\nStart time: {1}\n".format(url.split('/')[-1], str(datetime.datetime.time(start_dtm))))
     # Call the wget.download function with the url and output directory as variables
     wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
     # Create a datetime object for current date/time after download
@@ -126,7 +115,7 @@ def download_url_wget(out_dir, url):
     # Create a variable to store the time elapsed during download
     diff_dtm = end_dtm - start_dtm
     # Print status to Python console with where the file was downloaded and how long it took
-    print("The file downloaded to: {0}.\nDownload time: {1}".format(out_dir,str(diff_dtm)))
+    print("The file downloaded to: {0}.\nDownload time: {1}".format(os.path.join(out_dir, url.split('/')[-1]), str(diff_dtm)))
 
 def download_url_list_wget(out_dir, url_list):
     """
@@ -156,9 +145,20 @@ df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', u
 df_NCRN_GIS_Data_Sources_ready = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='Ready']
 
 for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
-    dest_folder = os.path.join(__ROOT_DIR, row['Local Directory'])
+    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+    #print('Download Destination: ', dest_dir)
     url = row['Web File for Download']
-    download_url_wget(dest_folder, url)
+    filename = url.split('/')[-1]
+    #print('Filename: ', filename)
+    ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+    #print('Extract to Dir: ', ext_dir_name)
+    fullpath_filename = os.path.join(dest_dir, filename)
+    #print('Full File Path: ', fullpath_filename)
+    download_url_wget(dest_dir, url)
+    if filename.endswith('.zip'):
+        print("'{0}' is unzipping...Please be patient!\n".format(filename))
+        shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+        print("Unzipped: {0}.\n".format(fullpath_filename))
 
 #print(df_NCRN_GIS_Data_Sources_ready)
 
