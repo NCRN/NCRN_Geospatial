@@ -5,9 +5,9 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{92edac8b-737a-48a0-9813-6143cc84c61d}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>Downloading\downloadData_v2.py</StartupFile>
+    <StartupFile>create_ncrn_gis_standard.py</StartupFile>
     <SearchPath />
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
