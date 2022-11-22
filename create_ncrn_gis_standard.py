@@ -12,7 +12,6 @@ in_gdb = r'NCRN_GIS_Standard_20221122.gdb' ## Change the name of the geodatabase
 ds = r'IMD' ## Currently putting IMD feature classes inside a feature dataset
 
 in_srs = r'NAD_1983_UTM_Zone_18N.prj' ## Update this based on the spatial reference system standard for the network
-
 # Create a spatial reference object
 sr = arcpy.SpatialReference(os.path.join(workspace, in_srs))
 
@@ -38,8 +37,8 @@ domains_list = ['DOM_DATAACCESS_NPS2016',
                 'DOM_REGIONCODE_NPS2016',
                 'DOM_XYACCURACY_NPS2016',
                 'DOM_YES_NO_UNK_NPS2016',
-                'DOM_IMPOINTTYPE_IMD2022',
-                'DOM_HABITATDESC_IMD2022',
+                'DOM_LOCATIONTYPE_IMD2022',
+                'DOM_HABITATTYPE_IMD2022',
                 'DOM_INDICATORCAT_IMD2022']
 
 # Loop over all the domains in the list and create them
@@ -94,25 +93,23 @@ domain_values_list = [[arcpy.env.workspace, 'DOM_DATAACCESS_NPS2016', 'Unrestric
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'Unknown', 'Unknown'],
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'Yes', 'Yes'],
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'No', 'No'],
-                        [arcpy.env.workspace, 'DOM_IMPOINTTYPE_IMD2022', 'Monitoring Plot', 'Monitoring Plot'],
-                        [arcpy.env.workspace, 'DOM_IMPOINTTYPE_IMD2022', 'Tree', 'Tree'],
-                        [arcpy.env.workspace, 'DOM_IMPOINTTYPE_IMD2022', 'Parking Location', 'Parking Location'],
-                        [arcpy.env.workspace, 'DOM_IMPOINTTYPE_IMD2022', 'Warning Location', 'Warning Location'],
-                        [arcpy.env.workspace, 'DOM_IMPOINTTYPE_IMD2022', 'Other', 'Other'],
-                        [arcpy.env.workspace, 'DOM_IMLINETYPE_IMD2022', 'Walking Route', 'Walking Route'],
-                        [arcpy.env.workspace, 'DOM_IMLINETYPE_IMD2022', 'Other', 'Other'],
-                        [arcpy.env.workspace, 'DOM_IMPOLYGONTYPE_IMD2022', 'Invasive Plant Area', 'Invasive Plant Area'],
-                        [arcpy.env.workspace, 'DOM_IMPOLYGONTYPE_IMD2022', 'Sensitive Species Area', 'Sensitive Species Area'],
-                        [arcpy.env.workspace, 'DOM_IMPOLYGONTYPE_IMD2022', 'Other', 'Other'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Forest', 'Forest'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Grassland', 'Grassland'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'River/Stream', 'River/Stream'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Marsh River', 'Marsh River'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Marsh Creek', 'Marsh Creek'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Marsh Interior', 'Marsh Interior'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Lentic', 'Lentic'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Lotic', 'Lotic'],
-                        [arcpy.env.workspace, 'DOM_HABITATDESC_IMD2022', 'Other', 'Other'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Monitoring Plot', 'Monitoring Plot'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Tree', 'Tree'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Parking Location', 'Parking Location'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Warning Location', 'Warning Location'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Walking Route', 'Walking Route'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Invasive Plant Area', 'Invasive Plant Area'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Sensitive Species Area', 'Sensitive Species Area'],
+                        [arcpy.env.workspace, 'DOM_LOCATIONTYPE_IMD2022', 'Other', 'Other'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Forest', 'Forest'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Grassland', 'Grassland'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'River/Stream', 'River/Stream'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Marsh River', 'Marsh River'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Marsh Creek', 'Marsh Creek'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Marsh Interior', 'Marsh Interior'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Lentic', 'Lentic'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Lotic', 'Lotic'],
+                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Other', 'Other'],
                         [arcpy.env.workspace, 'DOM_INDICATORCAT_IMD2022', 'Weather and climate', 'Weather and climate'],
                         [arcpy.env.workspace, 'DOM_INDICATORCAT_IMD2022', 'Water chemistry', 'Water chemistry'],
                         [arcpy.env.workspace, 'DOM_INDICATORCAT_IMD2022', 'Land cover and use', 'Land cover and use'],
@@ -161,7 +158,7 @@ create_fcs_dict = {1:['ECO_MonitoringLocations_pt','POINT'],
                    3:['ECO_MonitoringLocationsData_ln','POLYLINE'], 
                    4:['ECO_MonitoringLocationsData_py','POLYGON'],
                    5:['ECO_MonitoringLocationLogistics_pt', 'POINT'],
-                   6:['ECO_MonitoringLocationLogistics_ln', 'LINE'],
+                   6:['ECO_MonitoringLocationLogistics_ln', 'POLYLINE'],
                    7:['ECO_MonitoringLocationLogistics_py', 'POLYGON']}
 
 # Create all the feature classes
@@ -169,18 +166,18 @@ for k, v in create_fcs_dict.items():
     arcpy.CreateFeatureclass_management(arcpy.env.workspace, v[0], v[1], '', "DISABLED", "DISABLED", sr)
     print('Done creating feature class: [{0}]'.format(v[0]))
 
-monloc_fields_list = [['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
+monloc_fields_list = [
+                      ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
                       ['INDICATORCAT','TEXT','','',50,'INDICATORCAT','NULLABLE','NON_REQUIRED',''],
                       ['PROTOCOL','TEXT','','',50,'PROTOCOL','NULLABLE','NON_REQUIRED',''],
                       ['UNITCODE','TEXT','','',10,'UNITCODE','NULLABLE','NON_REQUIRED',''],
-                      ['SUBUNITCODE','TEXT','','',10,'SUBUNITCODE','NULLABLE','NON_REQUIRED',''],
                       ['GROUPCODE','TEXT','','',10,'GROUPCODE','NULLABLE','NON_REQUIRED',''],
                       ['REGIONCODE','TEXT','','',4,'REGIONCODE','NULLABLE','NON_REQUIRED',''],
                       ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
-                      ['SUBUNITNAME','TEXT','','',254,'SUBUNITNAME','NULLABLE','NON_REQUIRED',''],
                       ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
                       ['UNITTYPE','TEXT','','',254,'UNITTYPE','NULLABLE','NON_REQUIRED',''],
-                      ['HABITATDESC','TEXT','','',25,'HABITATDESC','NULLABLE','NON_REQUIRED',''],
+                      ['HABITATTYPE','TEXT','','',25,'HABITATTYPE','NULLABLE','NON_REQUIRED',''],
+                      ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
                       ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
                       ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
                       ['GRTSORDER','SHORT','','','','GRTSORDER','NULLABLE','NON_REQUIRED',''],
@@ -207,27 +204,47 @@ monloc_fields_list = [['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUI
                       ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
                       ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
                       ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
-                      ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']]
+                      ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
+                      ]
 
-monlocdata_fields_list = [['DATAMLOCID','TEXT','','',25,'DATAMLOCID','NULLABLE','NON_REQUIRED',''],
+monlocdata_fields_list = [
+               ['DATAMLOCID','TEXT','','',25,'DATAMLOCID','NULLABLE','NON_REQUIRED',''],
                ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
-               ['INDICATORCAT','TEXT','','',50,'INDICATORCAT','NULLABLE','NON_REQUIRED',''],
-               ['PROTOCOL','TEXT','','',50,'PROTOCOL','NULLABLE','NON_REQUIRED',''],               
+               ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
                ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
                ['DISTANCE','DOUBLE','','','','DISTANCE','NULLABLE','NON_REQUIRED',''],
                ['AZIMUTH','DOUBLE','','','','AZIMUTH','NULLABLE','NON_REQUIRED',''],
                ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
                ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],               
-               ['DATANOTES','TEXT','','',50,'DATANOTES','NULLABLE','NON_REQUIRED',''],
+               ['DATANOTES','TEXT','','',254,'DATANOTES','NULLABLE','NON_REQUIRED',''],
+               ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
                ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
                ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
                ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
-               ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']]
+               ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
+               ]
 
 # TODO: Populate this list with the fields to be added for ECO_MonitoringLocationsLogistics feature classes
 # Use __TYPE__ for the Core Type DOM
-# Use __LOGTYPE__ for the Logistics Type DOM
-monlogdata_fields_list = []
+monlogdata_fields_list = [
+               ['LOGIMLOCID','TEXT','','',25,'LOGMLOCID','NULLABLE','NON_REQUIRED',''],
+               ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
+               ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
+               ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
+               ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
+               ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
+               ['DRIVINGNOTES','TEXT','','',254,'DRIVINGNOTES','NULLABLE','NON_REQUIRED',''],
+               ['PARKINGNOTES','TEXT','','',254,'PARKINGNOTES','NULLABLE','NON_REQUIRED',''],
+               ['WALKINGNOTES','TEXT','','',254,'WALKINGNOTES','NULLABLE','NON_REQUIRED',''],
+               ['WARNINGNOTES','TEXT','','',254,'WARNINGNOTES','NULLABLE','NON_REQUIRED',''],
+               ['ALTNOTES','TEXT','','',254,'ALTNOTES','NULLABLE','NON_REQUIRED',''],
+               ['ALTNOTESEXT','TEXT','','',254,'ALTNOTESEXT','NULLABLE','NON_REQUIRED',''],
+               ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
+               ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
+               ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
+               ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
+               ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
+               ]
 
 geom_type = ''
 
@@ -236,13 +253,10 @@ for fc in arcpy.ListFeatureClasses():
     #print('This is the fc: {0}'.format(fc))
     if fc.endswith('_pt'):
         geom_type = 'POINTTYPE'
-        log_type = 'IMPOINTTYPE'
     elif fc.endswith('_ln'):
         geom_type = 'LINETYPE'
-        log_type = 'IMLINETYPE'
     else:
         geom_type = 'POLYGONTYPE'
-        log_type = 'IMPOLYGONTYPE'
     if 'Data_' in fc:
         # This will get the fields added to the locations data datasets
         for fld in monlocdata_fields_list:
@@ -252,12 +266,10 @@ for fc in arcpy.ListFeatureClasses():
                 arcpy.AddField_management(fc, fld[0], fld[1], fld[2], fld[3], fld[4], fld[5], fld[6], fld[7], fld[8])
             print('Done creating field [{0}] in [{1}]'.format(fld[0], fc))
     elif 'Logistics' in fc:
-        # This will get the fields added to the logistics datasets
+        # This will get the fields added to the logistics data datasets
         for fld in monlogdata_fields_list:
             if fld[0] == '__TYPE__':
                 arcpy.AddField_management(fc, geom_type, fld[1], fld[2], fld[3], fld[4], geom_type, fld[6], fld[7], fld[8])
-            elif fld[0] == '__LOGTYPE__':
-                arcpy.AddField_management(fc, log_type, fld[1], fld[2], fld[3], fld[4], geom_type, fld[6], fld[7], fld[8])
             else:
                 arcpy.AddField_management(fc, fld[0], fld[1], fld[2], fld[3], fld[4], fld[5], fld[6], fld[7], fld[8])
     else:
@@ -279,14 +291,13 @@ domain_fields_dict = {'DATAACCESS':'DOM_DATAACCESS_NPS2016',
                       'PUBLICDISPLAY':'DOM_PUBLICDISPLAY_NPS2016',
                       'REGIONCODE':'DOM_REGIONCODE_NPS2016',
                       'XYACCURACY':'DOM_XYACCURACY_NPS2016',
-                      'INDICATORCAT':'DOM_INDICATORCAT',
-                      'HABITATDESC':'DOM_HABITATDESC',
-                      'IMPOINTTYPE':'DOM_IMPOINTTYPE_IMD2022',
-                      'IMLINETYPE':'DOM_IMLINETYPE_IMD2022',
-                      'IMPOLYGONTYPE':'DOM_IMPOLYGONTYPE_IMD2022'}
+                      'INDICATORCAT':'DOM_INDICATORCAT_IMD2022',
+                      'HABITATTYPE':'DOM_HABITATTYPE_IMD2022',
+                      'LOCATIONTYPE':'DOM_LOCATIONTYPE_IMD2022'
+}
 
-#TODO: Add domain constraints to appropriate fields
-# arcpy.management.AssignDomainToField(in_table, field_name, domain_name, {subtype_code})
+#Add domain constraints to appropriate fields
+#arcpy.management.AssignDomainToField(in_table, field_name, domain_name, {subtype_code})
 for fc in arcpy.ListFeatureClasses():
     fields = arcpy.ListFields(fc)
     for field in fields:
