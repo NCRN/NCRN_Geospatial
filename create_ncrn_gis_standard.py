@@ -7,7 +7,7 @@ print('### GETTING STARTED ###'.format())
 # Currently hardcoded values that may be parameterized if bundling into a tool
 workspace = r'C:\Users\goettel\OneDrive - DOI\Documents\GIS_Files' ## Update this to be the directory where the geodatabase should be created
 
-in_gdb = r'NCRN_GIS_Standard_20221122.gdb' ## Change the name of the geodatabase as needed
+in_gdb = r'NCRN_GIS_Standard_20221123.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Currently putting IMD feature classes inside a feature dataset
 
@@ -175,6 +175,7 @@ monloc_fields_list = [
                       ['REGIONCODE','TEXT','','',4,'REGIONCODE','NULLABLE','NON_REQUIRED',''],
                       ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
                       ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
+                      ['SITENAME','TEXT','','',254,'SITENAME','NULLABLE','NON_REQUIRED',''],
                       ['UNITTYPE','TEXT','','',254,'UNITTYPE','NULLABLE','NON_REQUIRED',''],
                       ['HABITATTYPE','TEXT','','',25,'HABITATTYPE','NULLABLE','NON_REQUIRED',''],
                       ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
