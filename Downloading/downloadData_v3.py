@@ -169,8 +169,7 @@ for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
 #Specify the ArcGIS Online credentials to use.
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
-gis = GIS("https://arcgis.com", "ncrndata", "NCRNd@t@123!")
-print("Connected.")
+
 # Download all data from a user
 #def downloadUserItems(owner, downloadFormat):
 #    try:
