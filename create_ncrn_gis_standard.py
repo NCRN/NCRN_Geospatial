@@ -5,9 +5,9 @@ import sys
 print('### GETTING STARTED ###'.format())
 
 # Currently hardcoded values that may be parameterized if bundling into a tool
-workspace = r'C:\Users\goettel\OneDrive - DOI\Documents\GIS_Files' ## Update this to be the directory where the geodatabase should be created
+workspace = r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN_GIS_Data_Standard' ## Update this to be the directory where the geodatabase should be created
 
-in_gdb = r'NCRN_GIS_Standard_20221123.gdb' ## Change the name of the geodatabase as needed
+in_gdb = r'NCRN_GIS_Standard.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Currently putting IMD feature classes inside a feature dataset
 
@@ -167,84 +167,85 @@ for k, v in create_fcs_dict.items():
     print('Done creating feature class: [{0}]'.format(v[0]))
 
 monloc_fields_list = [
-                      ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
-                      ['INDICATORCAT','TEXT','','',50,'INDICATORCAT','NULLABLE','NON_REQUIRED',''],
-                      ['PROTOCOL','TEXT','','',50,'PROTOCOL','NULLABLE','NON_REQUIRED',''],
-                      ['UNITCODE','TEXT','','',10,'UNITCODE','NULLABLE','NON_REQUIRED',''],
-                      ['GROUPCODE','TEXT','','',10,'GROUPCODE','NULLABLE','NON_REQUIRED',''],
-                      ['REGIONCODE','TEXT','','',4,'REGIONCODE','NULLABLE','NON_REQUIRED',''],
-                      ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
-                      ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
-                      ['SITENAME','TEXT','','',254,'SITENAME','NULLABLE','NON_REQUIRED',''],
-                      ['UNITTYPE','TEXT','','',254,'UNITTYPE','NULLABLE','NON_REQUIRED',''],
-                      ['HABITATTYPE','TEXT','','',25,'HABITATTYPE','NULLABLE','NON_REQUIRED',''],
-                      ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
-                      ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
-                      ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
-                      ['GRTSORDER','SHORT','','','','GRTSORDER','NULLABLE','NON_REQUIRED',''],
-                      ['ELEVATION','DOUBLE','','','','ELEVATION','NULLABLE','NON_REQUIRED',''],
-                      ['ISEXTANT','TEXT','','',20,'ISEXTANT','NULLABLE','NON_REQUIRED',''],
-                      ['NOTES','TEXT','','',254,'NOTES','NULLABLE','NON_REQUIRED',''],
-                      ['PANEL','SHORT','','','','PANEL','NULLABLE','NON_REQUIRED',''],
-                      ['EVENTCOUNT','SHORT','','','','EVENTCOUNT','NULLABLE','NON_REQUIRED',''],
-                      ['EVENTEARLIEST','DATE','','','','EVENTEARLIEST','NULLABLE','NON_REQUIRED',''],
-                      ['EVENTLATEST','DATE','','','','EVENTLATEST','NULLABLE','NON_REQUIRED',''],
-                      ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
-                      ['PUBLICDISPLAY','TEXT','','',50,'PUBLICDISPLAY','NULLABLE','NON_REQUIRED',''],
-                      ['DATAACCESS','TEXT','','',50,'DATAACCESS','NULLABLE','NON_REQUIRED',''],
-                      ['ACCESSNOTES','TEXT','','',254,'ACCESSNOTES','NULLABLE','NON_REQUIRED',''],
-                      ['ORIGINATOR','TEXT','','',254,'ORIGINATOR','NULLABLE','NON_REQUIRED',''],
-                      ['OBSERVABLE','TEXT','','',20,'OBSERVABLE','NULLABLE','NON_REQUIRED',''],
-                      ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
-                      ['MAPMETHOD','TEXT','','',254,'MAPMETHOD','NULLABLE','NON_REQUIRED',''],
-                      ['MAPSOURCE','TEXT','','',254,'MAPSOURCE','NULLABLE','NON_REQUIRED',''],
-                      ['SOURCEDATE','DATE','','','','SOURCEDATE','NULLABLE','NON_REQUIRED',''],
-                      ['XYACCURACY','TEXT','','',50,'XYACCURACY','NULLABLE','NON_REQUIRED',''],
-                      ['GEOMETRYID','GUID','','','','GEOMETRYID','NULLABLE','NON_REQUIRED',''],
-                      ['FEATUREID','GUID','','','','FEATUREID','NULLABLE','NON_REQUIRED',''],
-                      ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
-                      ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
-                      ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
-                      ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
+                        ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
+                        ['INDICATORCAT','TEXT','','',50,'INDICATORCAT','NULLABLE','NON_REQUIRED',''],
+                        ['PROTOCOL','TEXT','','',50,'PROTOCOL','NULLABLE','NON_REQUIRED',''],
+                        ['REGIONCODE','TEXT','','',4,'REGIONCODE','NULLABLE','NON_REQUIRED',''],
+                        ['GROUPCODE','TEXT','','',10,'GROUPCODE','NULLABLE','NON_REQUIRED',''],
+                        ['UNITCODE','TEXT','','',10,'UNITCODE','NULLABLE','NON_REQUIRED',''],
+                        ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
+                        ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
+                        ['UNITTYPE','TEXT','','',254,'UNITTYPE','NULLABLE','NON_REQUIRED',''],
+                        ['SITENAME','TEXT','','',254,'SITENAME','NULLABLE','NON_REQUIRED',''],
+                        ['HABITATTYPE','TEXT','','',25,'HABITATTYPE','NULLABLE','NON_REQUIRED',''],
+                        ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
+                        ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
+                        ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
+                        ['GRTSORDER','SHORT','','','','GRTSORDER','NULLABLE','NON_REQUIRED',''],
+                        ['ELEVATION','DOUBLE','','','','ELEVATION','NULLABLE','NON_REQUIRED',''],
+                        ['OBSERVABLE','TEXT','','',20,'OBSERVABLE','NULLABLE','NON_REQUIRED',''],
+                        ['ISEXTANT','TEXT','','',20,'ISEXTANT','NULLABLE','NON_REQUIRED',''],
+                        ['EVENTFREQUENCY','SHORT','','','','EVENTFREQUENCY','NULLABLE','NON_REQUIRED',''],
+                        ['PANEL','SHORT','','','','PANEL','NULLABLE','NON_REQUIRED',''],
+                        ['EVENTCOUNT','SHORT','','','','EVENTCOUNT','NULLABLE','NON_REQUIRED',''],
+                        ['EVENTEARLIEST','DATE','','','','EVENTEARLIEST','NULLABLE','NON_REQUIRED',''],
+                        ['EVENTLATEST','DATE','','','','EVENTLATEST','NULLABLE','NON_REQUIRED',''],
+                        ['NOTES','TEXT','','',254,'NOTES','NULLABLE','NON_REQUIRED',''],
+                        ['MAPLABEL','TEXT','','','','MAPLABEL','NULLABLE','NON_REQUIRED',''],
+                        ['PUBLICDISPLAY','TEXT','','',50,'PUBLICDISPLAY','NULLABLE','NON_REQUIRED',''],
+                        ['DATAACCESS','TEXT','','',50,'DATAACCESS','NULLABLE','NON_REQUIRED',''],
+                        ['ACCESSNOTES','TEXT','','',254,'ACCESSNOTES','NULLABLE','NON_REQUIRED',''],
+                        ['ORIGINATOR','TEXT','','',254,'ORIGINATOR','NULLABLE','NON_REQUIRED',''],
+                        ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
+                        ['MAPMETHOD','TEXT','','',254,'MAPMETHOD','NULLABLE','NON_REQUIRED',''],
+                        ['MAPSOURCE','TEXT','','',254,'MAPSOURCE','NULLABLE','NON_REQUIRED',''],
+                        ['SOURCEDATE','DATE','','','','SOURCEDATE','NULLABLE','NON_REQUIRED',''],
+                        ['XYACCURACY','TEXT','','',50,'XYACCURACY','NULLABLE','NON_REQUIRED',''],
+                        ['GEOMETRYID','TEXT','','',38,'GEOMETRYID','NULLABLE','NON_REQUIRED',''],
+                        ['FEATUREID','TEXT','','',50,'FEATUREID','NULLABLE','NON_REQUIRED',''],
+                        ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
+                        ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
+                        ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
+                        ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
                       ]
 
 monlocdata_fields_list = [
-               ['DATAMLOCID','TEXT','','',25,'DATAMLOCID','NULLABLE','NON_REQUIRED',''],
-               ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
-               ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
-               ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
-               ['DISTANCE','DOUBLE','','','','DISTANCE','NULLABLE','NON_REQUIRED',''],
-               ['AZIMUTH','DOUBLE','','','','AZIMUTH','NULLABLE','NON_REQUIRED',''],
-               ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
-               ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],               
-               ['DATANOTES','TEXT','','',254,'DATANOTES','NULLABLE','NON_REQUIRED',''],
-               ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
-               ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
-               ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
-               ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
-               ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
+                ['DATAIMLOCID','TEXT','','',25,'DATAIMLOCID','NULLABLE','NON_REQUIRED',''],
+                ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
+                ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
+                ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
+                ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
+                ['DISTANCE','DOUBLE','','','','DISTANCE','NULLABLE','NON_REQUIRED',''],
+                ['AZIMUTH','DOUBLE','','','','AZIMUTH','NULLABLE','NON_REQUIRED',''],
+                ['DATANOTES','TEXT','','',254,'DATANOTES','NULLABLE','NON_REQUIRED',''],
+                ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
+                ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
+                ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
+                ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
+                ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
+                ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
                ]
 
 # TODO: Populate this list with the fields to be added for ECO_MonitoringLocationsLogistics feature classes
 # Use __TYPE__ for the Core Type DOM
 monlogdata_fields_list = [
-               ['LOGIMLOCID','TEXT','','',25,'LOGMLOCID','NULLABLE','NON_REQUIRED',''],
-               ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
-               ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
-               ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
-               ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
-               ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
-               ['DRIVINGNOTES','TEXT','','',254,'DRIVINGNOTES','NULLABLE','NON_REQUIRED',''],
-               ['PARKINGNOTES','TEXT','','',254,'PARKINGNOTES','NULLABLE','NON_REQUIRED',''],
-               ['WALKINGNOTES','TEXT','','',254,'WALKINGNOTES','NULLABLE','NON_REQUIRED',''],
-               ['WARNINGNOTES','TEXT','','',254,'WARNINGNOTES','NULLABLE','NON_REQUIRED',''],
-               ['ALTNOTES','TEXT','','',254,'ALTNOTES','NULLABLE','NON_REQUIRED',''],
-               ['ALTNOTESEXT','TEXT','','',254,'ALTNOTESEXT','NULLABLE','NON_REQUIRED',''],
-               ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
-               ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
-               ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
-               ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
-               ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
+                ['LOGIMLOCID','TEXT','','',25,'LOGIMLOCID','NULLABLE','NON_REQUIRED',''],
+                ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
+                ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
+                ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
+                ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
+                ['DRIVINGNOTES','TEXT','','',254,'DRIVINGNOTES','NULLABLE','NON_REQUIRED',''],
+                ['PARKINGNOTES','TEXT','','',254,'PARKINGNOTES','NULLABLE','NON_REQUIRED',''],
+                ['WALKINGNOTES','TEXT','','',254,'WALKINGNOTES','NULLABLE','NON_REQUIRED',''],
+                ['WARNINGNOTES','TEXT','','',254,'WARNINGNOTES','NULLABLE','NON_REQUIRED',''],
+                ['ALTNOTES','TEXT','','',254,'ALTNOTES','NULLABLE','NON_REQUIRED',''],
+                ['ALTNOTESEXT','TEXT','','',254,'ALTNOTESEXT','NULLABLE','NON_REQUIRED',''],
+                ['MAPLABEL','TEXT','','',100,'MAPLABEL','NULLABLE','NON_REQUIRED',''],
+                ['__TYPE__','TEXT','','',50,'','NULLABLE','NON_REQUIRED',''],
+                ['CREATEDATE','DATE','','','','CREATEDATE','NULLABLE','NON_REQUIRED',''],
+                ['CREATEUSER','TEXT','','',50,'CREATEUSER','NULLABLE','NON_REQUIRED',''],
+                ['EDITDATE','DATE','','','','EDITDATE','NULLABLE','NON_REQUIRED',''],
+                ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
                ]
 
 geom_type = ''

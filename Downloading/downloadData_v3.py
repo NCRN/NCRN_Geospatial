@@ -44,7 +44,7 @@ Some of these global variables may not be in use yet.
 __WORKSPACE = r'U:\GIS'
 
 # Set the directory path to the root directory that will be documented
-__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents'
+__ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - GIS\FieldMaps'
 
 # Create a variable to store the file extension for file geodatabases
 __FGDB_EXT = '.gdb'
@@ -140,7 +140,7 @@ def download_url_list_wget(out_dir, url_list):
 ########### TESTING ##########
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Is Zip', 'Web File for Download', 'Local Directory'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Web File for Download', 'Local Directory'])
 
 #print(df_NCRN_GIS_Data_Sources)
 
@@ -206,9 +206,9 @@ download_path = r'C:\Users\goettel\OneDrive - DOI\Documents\GIS\Geodata\NPS_Regi
 #download_ncr_gdb(download_path, file_type)
 
 # 'NCR Regional Geodatabase INTERNAL' = 'NCR_Regional_Datasets_INTERNAL.gdb.zip
-gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
-#gdb_item.get_data()
-path = gdb_item.download(download_path)
+#gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
+##gdb_item.get_data()
+#path = gdb_item.download(download_path)
 
 
 ## Full list of NWI URLs for testing
