@@ -185,7 +185,7 @@ monloc_fields_list = [
                         ['ELEVATION','DOUBLE','','','','ELEVATION','NULLABLE','NON_REQUIRED',''],
                         ['OBSERVABLE','TEXT','','',20,'OBSERVABLE','NULLABLE','NON_REQUIRED',''],
                         ['ISEXTANT','TEXT','','',20,'ISEXTANT','NULLABLE','NON_REQUIRED',''],
-                        ['EVENTFREQUENCY','SHORT','','','','EVENTFREQUENCY','NULLABLE','NON_REQUIRED',''],
+                        ['EVENTFREQUENCY','TEXT','','',25,'EVENTFREQUENCY','NULLABLE','NON_REQUIRED',''],
                         ['PANEL','SHORT','','','','PANEL','NULLABLE','NON_REQUIRED',''],
                         ['EVENTCOUNT','SHORT','','','','EVENTCOUNT','NULLABLE','NON_REQUIRED',''],
                         ['EVENTEARLIEST','DATE','','','','EVENTEARLIEST','NULLABLE','NON_REQUIRED',''],
