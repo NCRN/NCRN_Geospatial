@@ -44,7 +44,7 @@ Some of these global variables may not be in use yet.
 __WORKSPACE = r'U:\GIS'
 
 # Set the directory path to the root directory that will be documented
-__ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - GIS\FieldMaps'
+__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents'
 
 # Create a variable to store the file extension for file geodatabases
 __FGDB_EXT = '.gdb'
@@ -163,6 +163,7 @@ for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
         shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
         print("Unzipped: {0}.\n".format(fullpath_filename))
         os.remove(fullpath_filename)
+
 #print(df_NCRN_GIS_Data_Sources_ready)
 
 #Download feature service items from ArcGIS Online
