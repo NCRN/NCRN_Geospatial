@@ -1,2 +1,6 @@
 
 *.vsidx
+*.py
+*.pyproj
+*.sln
+GOettelVSProject/.vs/GOettelVSProject/v17/.suo
