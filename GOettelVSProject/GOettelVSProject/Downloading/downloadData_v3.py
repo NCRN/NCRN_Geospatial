@@ -32,7 +32,9 @@ import shutil
 import wget
 import arcgis
 from arcgis.gis import GIS
+import pathlib
 from pathlib import Path, PurePath
+import zipfile
 from zipfile import ZipFile
 
 
@@ -174,14 +176,21 @@ print(df_NCRN_GIS_Data_Sources_ready)
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
-download_path = r'C:\Users\goettel\OneDrive - DOI\Geospatial\GIS\Geodata\NPS_Regional_Data'
+download_path_regionaldataset = r'C:\Users\goettel\OneDrive - DOI\Geospatial\GIS\Geodata\NPS_Regional_Data'
+download_path_hifld = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads\GIS\Geodata\Basedata\Vector\Infrastructure\HIFLD'
 
 #download regional database INTERNAL
-gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
-gdb_item.get_data()
-path = gdb_item.download(download_path)
+#gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
+#gdb_item.get_data()
+#path = gdb_item.download(download_path_npsregionaldata)
 
 #download regional database
-gdb_item = gis.content.get('c09eec796cbc4cb6adfcb2bd6c8ebd46')
-gdb_item.get_data()
-path = gdb_item.download(download_path)
+#gdb_item = gis.content.get('c09eec796cbc4cb6adfcb2bd6c8ebd46')
+#gdb_item.get_data()
+#path = gdb_item.download(download_path_npsregionaldata)
+
+#download HIFLD
+#data_item_id = "d4090758322c4d32a4cd002ffaa0aa12"
+#data_item = gis.content.get(data_item_id)
+#output_file = data_item.export(title = data_item_id, export_format = "Shapefile", wait = True)
+#output_file.download(save_path = download_path_hifld)

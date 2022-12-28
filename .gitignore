@@ -3,3 +3,4 @@
 GOettelVSProject/.vs/GOettelVSProject/v17/.suo
 *.pyproj
 *.vsidx
+*.lock
