@@ -144,18 +144,24 @@ __RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logica
 __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sources.xlsx'
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Web File for Download', 'Local Directory', 'Local File Path'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'File Rename', 'Local File Path'])
 
 #print(df_NCRN_GIS_Data_Sources)
 
-##Select sources where Status = Ready
-df_NCRN_GIS_Data_Sources_ready = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='Ready']
+##Select sources where Status is URL
+df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='URL']
 
-for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
+#Iterate over dataframe to download urls
+for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
+    #Folder where the download will go
     dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
     #print('Download Destination: ', dest_dir)
+    #File path for the download
     dest_file = os.path.join(__ROOT_DIR, row['Local File Path'])
+    #print('File Path: ', dest_file)
+    #Define download link
     url = row['Web File for Download']
+    #Old file name of the url
     filename = url.split('/')[-1]
     #print('Filename: ', filename)
     ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
@@ -167,30 +173,46 @@ for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
         #print("'{0}' is unzipping...Please be patient!\n".format(filename))
         shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
         #print("Unzipped: {0}.\n".format(fullpath_filename))
+        #delete zip file after extract
         os.remove(fullpath_filename)
-    os.rename(ext_dir_name, dest_file)
-print(df_NCRN_GIS_Data_Sources_ready)
+        #rename file
+        os.rename(ext_dir_name, dest_file)
+    else:     
+        os.rename(fullpath_filename, dest_file)
+print(df_NCRN_GIS_Data_Sources_URL)
 
 ###Download feature service items from ArcGIS Online
 #Specify the ArcGIS Online credentials to use.
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
-download_path_regionaldataset = r'C:\Users\goettel\OneDrive - DOI\Geospatial\GIS\Geodata\NPS_Regional_Data'
-download_path_hifld = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads\GIS\Geodata\Basedata\Vector\Infrastructure\HIFLD'
+##Select sources where Status is AGOL
+df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='AGOL']
 
-#download regional database INTERNAL
-#gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
-#gdb_item.get_data()
-#path = gdb_item.download(download_path_npsregionaldata)
-
-#download regional database
-#gdb_item = gis.content.get('c09eec796cbc4cb6adfcb2bd6c8ebd46')
-#gdb_item.get_data()
-#path = gdb_item.download(download_path_npsregionaldata)
-
-#download HIFLD
-#data_item_id = "d4090758322c4d32a4cd002ffaa0aa12"
-#data_item = gis.content.get(data_item_id)
-#output_file = data_item.export(title = data_item_id, export_format = "Shapefile", wait = True)
-#output_file.download(save_path = download_path_hifld)
+#Iterate over dataframe to download AGOL content
+for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
+    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+    data_item_id = row['Data Item ID']
+    data_item = gis.content.get(data_item_id)
+    if row['Source Data Type']=='File Geodatabase':       
+        data_item.get_data()
+        filename = data_item.download(dest_dir)
+        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+        fullpath_filename = os.path.join(dest_dir, filename)
+        if filename.endswith('.zip'):
+            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+            #print("unzipped: {0}.\n".format(fullpath_filename))
+            os.remove(fullpath_filename)
+    elif row['Source Data Type']=='Shapefile':
+        data_item = data_item.export(title = row['File Rename'], export_format = "Shapefile", wait = True)
+        data_item.get_data()
+        filename = data_item.download(dest_dir)
+        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+        fullpath_filename = os.path.join(dest_dir, filename)
+        if filename.endswith('.zip'):
+            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+            #print("unzipped: {0}.\n".format(fullpath_filename))
+            os.remove(fullpath_filename)
+print(df_NCRN_GIS_Data_Sources_AGOL)
