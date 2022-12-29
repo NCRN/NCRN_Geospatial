@@ -36,6 +36,7 @@ import pathlib
 from pathlib import Path, PurePath
 import zipfile
 from zipfile import ZipFile
+import arcpy
 
 
 ###Setup progress box
@@ -189,30 +190,46 @@ print(df_NCRN_GIS_Data_Sources_URL)
 ##Select sources where Status is AGOL
 df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='AGOL']
 
-#Iterate over dataframe to download AGOL content
-for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
-    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-    data_item_id = row['Data Item ID']
-    data_item = gis.content.get(data_item_id)
-    if row['Source Data Type']=='File Geodatabase':       
-        data_item.get_data()
-        filename = data_item.download(dest_dir)
-        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-        fullpath_filename = os.path.join(dest_dir, filename)
-        if filename.endswith('.zip'):
-            #print("'{0}' is unzipping...please be patient!\n".format(filename))
-            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-            #print("unzipped: {0}.\n".format(fullpath_filename))
-            os.remove(fullpath_filename)
-    elif row['Source Data Type']=='Shapefile':
-        data_item = data_item.export(title = row['File Rename'], export_format = "Shapefile", wait = True)
-        data_item.get_data()
-        filename = data_item.download(dest_dir)
-        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-        fullpath_filename = os.path.join(dest_dir, filename)
-        if filename.endswith('.zip'):
-            #print("'{0}' is unzipping...please be patient!\n".format(filename))
-            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-            #print("unzipped: {0}.\n".format(fullpath_filename))
-            os.remove(fullpath_filename)
-print(df_NCRN_GIS_Data_Sources_AGOL)
+##Iterate over dataframe to download AGOL content
+#for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
+#    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+#    data_item_id = row['Data Item ID']
+#    data_item = gis.content.get(data_item_id)
+#    if row['Source Data Type']=='File Geodatabase':       
+#        data_item.get_data()
+#        filename = data_item.download(dest_dir)
+#        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+#        fullpath_filename = os.path.join(dest_dir, filename)
+#        if filename.endswith('.zip'):
+#            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+#            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+#            #print("unzipped: {0}.\n".format(fullpath_filename))
+#            os.remove(fullpath_filename)
+#    elif row['Source Data Type']=='Shapefile':
+#        data_item = data_item.export(title = row['File Rename'], export_format = "Shapefile", wait = True)
+#        data_item.get_data()
+#        filename = data_item.download(dest_dir)
+#        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+#        fullpath_filename = os.path.join(dest_dir, filename)
+#        if filename.endswith('.zip'):
+#            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+#            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+#            #print("unzipped: {0}.\n".format(fullpath_filename))
+#            os.remove(fullpath_filename)
+#print(df_NCRN_GIS_Data_Sources_AGOL)
+
+#gis = GIS("pro")
+
+### XY to Point NPDES_Discharge_Points
+## Set environment settings
+#arcpy.env.workspace = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads\GIS\Geodata\Basedata\Vector\Water\EPA\NPDES_Discharge_Points'
+
+## Set the local variables
+#in_table = os.path.join(arcpy.env.workspace, "npdes_outfalls_layer.csv")
+#out_feature_class = "FACILITY_DischargePoints_pt"
+#x_coords = "LATITUDE83"
+#y_coords = "LONGITUDE83"
+
+## Make the XY event layer...
+#arcpy.management.XYTableToPoint(in_table, out_feature_class,
+#                                x_coords, y_coords)
