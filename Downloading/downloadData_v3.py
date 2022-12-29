@@ -25,42 +25,20 @@ TEST CHANGE
 # Import statements for utilized libraries / packages
 import datetime
 import os
+import sys
 import pandas as pd
 import requests
 import shutil
 import wget
 import arcgis
 from arcgis.gis import GIS
+import pathlib
 from pathlib import Path, PurePath
+import zipfile
 from zipfile import ZipFile
 
 
-"""
-Set various global variables. Some of these could be parameterized to be used in an 
-ArcGIS Toolbox script and/or command line use. 
-Some of these global variables may not be in use yet.
-"""
-
-# Set the directory path to the root directory that will be documented
-__WORKSPACE = r'U:\GIS'
-
-# Set the directory path to the root directory that will be documented
-__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents'
-
-# Create a variable to store the file extension for file geodatabases
-__FGDB_EXT = '.gdb'
-
-# Create a variable to store the file extension for shapefiles
-__SHP_EXT = '.shp'
-
-# Create a list variable to store file extensions to be ignored
-__EXCLUDE_EXT = ['lock', 'gdbindexes', 'gdbtable', 'gdbtablx', 'horizon', 'spx', 'freelist', 'atx'] # Logical variable to parameterize for toolbox and/or command line (maybe)
-
-# Create a list variable to store the file extensions for rasters (that are outside of FGDBs)
-__RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logical variable to parameterize for toolbox and/or command line
-
-# Create a variable to store the full path to the GIS Library sources Excel file
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx'
+###Setup progress box
 
 def get_file_size_requests(url):
     """
@@ -138,20 +116,52 @@ def download_url_list_wget(out_dir, url_list):
     for url in url_list:
         download_url_wget(out_dir, url)
 
-########### TESTING ##########
+"""
+Set various global variables. Some of these could be parameterized to be used in an 
+ArcGIS Toolbox script and/or command line use. 
+Some of these global variables may not be in use yet.
+"""
+
+# Set the directory path to the root directory that will be documented
+__WORKSPACE = r'U:\GIS'
+
+# Set the directory path to the root directory that will be documented
+__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads'
+
+# Create a variable to store the file extension for file geodatabases
+__FGDB_EXT = '.gdb'
+
+# Create a variable to store the file extension for shapefiles
+__SHP_EXT = '.shp'
+
+# Create a list variable to store file extensions to be ignored
+__EXCLUDE_EXT = ['lock', 'gdbindexes', 'gdbtable', 'gdbtablx', 'horizon', 'spx', 'freelist', 'atx'] # Logical variable to parameterize for toolbox and/or command line (maybe)
+
+# Create a list variable to store the file extensions for rasters (that are outside of FGDBs)
+__RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logical variable to parameterize for toolbox and/or command line
+
+# Create a variable to store the full path to the GIS Library sources Excel file
+__XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sources.xlsx'
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Web File for Download', 'Local Directory'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'File Rename', 'Local File Path'])
 
 #print(df_NCRN_GIS_Data_Sources)
 
-##Select sources where Status = Ready
-df_NCRN_GIS_Data_Sources_ready = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='Ready']
+##Select sources where Status is URL
+df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='URL']
 
-for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
+#Iterate over dataframe to download urls
+for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
+    #Folder where the download will go
     dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
     #print('Download Destination: ', dest_dir)
+    #File path for the download
+    dest_file = os.path.join(__ROOT_DIR, row['Local File Path'])
+    #print('File Path: ', dest_file)
+    #Define download link
     url = row['Web File for Download']
+    #Old file name of the url
     filename = url.split('/')[-1]
     #print('Filename: ', filename)
     ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
@@ -160,74 +170,49 @@ for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
     #print('Full File Path: ', fullpath_filename)
     download_url_wget(dest_dir, url)
     if filename.endswith('.zip'):
-        print("'{0}' is unzipping...Please be patient!\n".format(filename))
+        #print("'{0}' is unzipping...Please be patient!\n".format(filename))
         shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-        print("Unzipped: {0}.\n".format(fullpath_filename))
+        #print("Unzipped: {0}.\n".format(fullpath_filename))
+        #delete zip file after extract
         os.remove(fullpath_filename)
+        #rename file
+        os.rename(ext_dir_name, dest_file)
+    else:     
+        os.rename(fullpath_filename, dest_file)
+print(df_NCRN_GIS_Data_Sources_URL)
 
-#print(df_NCRN_GIS_Data_Sources_ready)
-
-#Download feature service items from ArcGIS Online
+###Download feature service items from ArcGIS Online
 #Specify the ArcGIS Online credentials to use.
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
-# Download all data from a user
-#def downloadUserItems(owner, downloadFormat):
-#    try:
-#        group = gis.groups.search(query = 'title: "NCR Regional Datasets INTERNAL Download"')
-#        for group_item in group.content():
-#            print(group_item)
-#        # Search items by username
-#        #items = gis.content.search(query='owner:ncrgis', item_type='File Geodatabase')
-#        #print(items)
-#        ## Loop through each item and if equal to Feature Service then download it
-#        #for item in items:
-#        #    print(item)
-#        #    result = item.export(item.title, downloadFormat)
-#        #    data_path = Path(r'C:\Users\goettel\OneDrive - DOI\Documents\GIS\Geodata\NPS_Regional_Data')
-#        #    result.download(save_path=data_path)
+##Select sources where Status is AGOL
+df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='AGOL']
 
-## Function takes in two parameters. Username, and the type of download format.
-#downloadUserItems('ncrgis', downloadFormat='File Geodatabase')
-#print("All items downloaded")
-
-#def download_ncr_gdb(download_path, file_type):
-#    groups = gis.groups.search(query = 'title: "NCR Regional Datasets INTERNAL Download"')
-#    for group in groups:
-#        for group_item in group.content():
-#            #print(group_item)
-#            if group_item.title == 'NCR Regional Geodatabase INTERNAL':
-#                result = group_item.export(group_item.title, file_type)
-#                result.download(save_path = download_path)
-#                print('Successfully downloaded file! (in theory)')
-
-download_path = r'C:\Users\goettel\OneDrive - DOI\Documents\GIS\Geodata\NPS_Regional_Data'
-#file_type = 'File Geodatabase'
-
-#download_ncr_gdb(download_path, file_type)
-
-# 'NCR Regional Geodatabase INTERNAL' = 'NCR_Regional_Datasets_INTERNAL.gdb.zip
-#gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
-##gdb_item.get_data()
-#path = gdb_item.download(download_path)
-
-
-## Full list of NWI URLs for testing
-#wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
-#                r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
-#                r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip',
-#                r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip']
-
-## Partial list of NWI URLs for testing
-#wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip']
-
-## Out directory for testing downloads
-#out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
-
-## Test get_file_size_requests on list or ZIP URLs
-#for url in wetland_urls:
-#    print(get_file_size_requests(url))
-
-## Test download_url_wget on NWI Wetlands ZIP URLs
-#download_url_wget(out_dir, wetland_urls)
+#Iterate over dataframe to download AGOL content
+for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
+    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+    data_item_id = row['Data Item ID']
+    data_item = gis.content.get(data_item_id)
+    if row['Source Data Type']=='File Geodatabase':       
+        data_item.get_data()
+        filename = data_item.download(dest_dir)
+        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+        fullpath_filename = os.path.join(dest_dir, filename)
+        if filename.endswith('.zip'):
+            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+            #print("unzipped: {0}.\n".format(fullpath_filename))
+            os.remove(fullpath_filename)
+    elif row['Source Data Type']=='Shapefile':
+        data_item = data_item.export(title = row['File Rename'], export_format = "Shapefile", wait = True)
+        data_item.get_data()
+        filename = data_item.download(dest_dir)
+        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+        fullpath_filename = os.path.join(dest_dir, filename)
+        if filename.endswith('.zip'):
+            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+            #print("unzipped: {0}.\n".format(fullpath_filename))
+            os.remove(fullpath_filename)
+print(df_NCRN_GIS_Data_Sources_AGOL)
