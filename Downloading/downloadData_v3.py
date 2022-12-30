@@ -23,6 +23,7 @@ TEST CHANGE
 
 
 # Import statements for utilized libraries / packages
+from ast import If
 import datetime
 import os
 import sys
@@ -37,6 +38,7 @@ from pathlib import Path, PurePath
 import zipfile
 from zipfile import ZipFile
 import arcpy
+import glob
 
 
 ###Setup progress box
@@ -145,50 +147,54 @@ __RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logica
 __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sources.xlsx'
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'File Rename', 'Local File Path'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Source', 'Local Directory', 'File Rename', 'Local File Path', 'Old Layer Name', 'New Layer Name'])
 
 #print(df_NCRN_GIS_Data_Sources)
 
 ##Select sources where Status is URL
-df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='URL']
+df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Status"] == 'URL') & (df_NCRN_GIS_Data_Sources["Activated"]=='Yes')]
 
 #Iterate over dataframe to download urls
-for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
-    #Folder where the download will go
-    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-    #print('Download Destination: ', dest_dir)
-    #File path for the download
-    dest_file = os.path.join(__ROOT_DIR, row['Local File Path'])
-    #print('File Path: ', dest_file)
-    #Define download link
-    url = row['Web File for Download']
-    #Old file name of the url
-    filename = url.split('/')[-1]
-    #print('Filename: ', filename)
-    ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-    #print('Extract to Dir: ', ext_dir_name)
-    fullpath_filename = os.path.join(dest_dir, filename)
-    #print('Full File Path: ', fullpath_filename)
-    download_url_wget(dest_dir, url)
-    if filename.endswith('.zip'):
-        #print("'{0}' is unzipping...Please be patient!\n".format(filename))
-        shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-        #print("Unzipped: {0}.\n".format(fullpath_filename))
-        #delete zip file after extract
-        os.remove(fullpath_filename)
-        #rename file
-        os.rename(ext_dir_name, dest_file)
-    else:     
-        os.rename(fullpath_filename, dest_file)
-print(df_NCRN_GIS_Data_Sources_URL)
+#for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
+#    #Folder where the download will go
+#    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+#    #print('Download Destination: ', dest_dir)
+#    #File path for the download
+#    dest_file = os.path.join(__ROOT_DIR, row['Local File Path'])
+#    #print('File Path: ', dest_file)
+#    #Define download link
+#    url = row['Web File for Download']
+#    #Old file name of the url
+#    filename = url.split('/')[-1]
+#    #print('Filename: ', filename)
+#    ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+#    #print('Extract to Dir: ', ext_dir_name)
+#    fullpath_filename = os.path.join(dest_dir, filename)
+#    #print('Full File Path: ', fullpath_filename)
+#    download_url_wget(dest_dir, url)
+#    if filename.endswith('.zip'):
+#        #print("'{0}' is unzipping...Please be patient!\n".format(filename))
+#        shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+#        #print("Unzipped: {0}.\n".format(fullpath_filename))
+#        #delete zip file after extract
+#        os.remove(fullpath_filename)
+#        #rename file
+#        os.rename(ext_dir_name, dest_file)
+#    else:     
+#        os.rename(fullpath_filename, dest_file)
+#print(df_NCRN_GIS_Data_Sources_URL)
 
 ###Download feature service items from ArcGIS Online
 #Specify the ArcGIS Online credentials to use.
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
+
+
+#gis = GIS("pro")
+
 ##Select sources where Status is AGOL
-df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='AGOL']
+df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Status"] == 'AGOL') & (df_NCRN_GIS_Data_Sources["Activated"]=='Yes')]
 
 ##Iterate over dataframe to download AGOL content
 #for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
@@ -205,8 +211,8 @@ df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Source
 #            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
 #            #print("unzipped: {0}.\n".format(fullpath_filename))
 #            os.remove(fullpath_filename)
-#    elif row['Source Data Type']=='Shapefile':
-#        data_item = data_item.export(title = row['File Rename'], export_format = "Shapefile", wait = True)
+#    elif row['Source Data Type']=='Multiple (File Geodatabase)':
+#        data_item = data_item.export(title = row['File Rename'], export_format = "File Geodatabase", wait = True)
 #        data_item.get_data()
 #        filename = data_item.download(dest_dir)
 #        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
@@ -218,18 +224,73 @@ df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Source
 #            os.remove(fullpath_filename)
 #print(df_NCRN_GIS_Data_Sources_AGOL)
 
-#gis = GIS("pro")
+##Select sources where Source Data Type is Shapefile and Status is URL
+df_NCRN_GIS_Data_Sources_Shapefile = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Source Data Type"] == 'Shapefile') & (df_NCRN_GIS_Data_Sources["Status"] == 'URL')]
 
-### XY to Point NPDES_Discharge_Points
-## Set environment settings
-#arcpy.env.workspace = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads\GIS\Geodata\Basedata\Vector\Water\EPA\NPDES_Discharge_Points'
+#Delete unwanted shapefiles
+for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
+    dest_dir = os.path.join(__ROOT_DIR, row['Local File Path'])
+    if row['Source']=='Open Street Map':
+        landuse = os.path.join(dest_dir, 'gis_osm_landuse*')
+        natural = os.path.join(dest_dir, 'gis_osm_natural*')
+        places = os.path.join(dest_dir, 'gis_osm_places*')
+        pofw = os.path.join(dest_dir, 'gis_osm_pofw*')
+        pois = os.path.join(dest_dir, 'gis_osm_pois*')
+        traffic = os.path.join(dest_dir, 'gis_osm_traffic*')
+        water = os.path.join(dest_dir, 'gis_osm_water*')
+        transport = os.path.join(dest_dir, 'gis_osm_transport*')
+        try:
+            for item in glob.iglob(landuse, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(natural, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(places, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(pofw, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(pois, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(traffic, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(water, recursive=True):
+                os.remove(item)
+            for item in glob.iglob(transport, recursive=True):
+                os.remove(item)
+        except Exception:
+            pass
 
-## Set the local variables
-#in_table = os.path.join(arcpy.env.workspace, "npdes_outfalls_layer.csv")
-#out_feature_class = "FACILITY_DischargePoints_pt"
-#x_coords = "LATITUDE83"
-#y_coords = "LONGITUDE83"
+#Rename shapefiles
+for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
+    dest_dir = os.path.join(__ROOT_DIR, row['Local File Path'])
+    old_filename = row['Old Layer Name']
+    new_filename = row['New Layer Name']
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.cpg'),os.path.join(dest_dir,new_filename+'.cpg')) # Rename cpg file
+    except Exception:
+        pass
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.dbf'),os.path.join(dest_dir,new_filename+'.dbf')) # Rename dbf file
+    except Exception:
+        pass
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.prj'),os.path.join(dest_dir,new_filename+'.prj')) # Rename prj file
+    except Exception:
+        pass
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.shp'),os.path.join(dest_dir,new_filename+'.shp')) # Rename shp file
+    except Exception:
+        pass
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.shx'),os.path.join(dest_dir,new_filename+'.shx')) # Rename shx file
+    except Exception:
+        pass
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.sbn'),os.path.join(dest_dir,new_filename+'.sbn')) # Rename sbn file
+    except Exception:
+        pass
+    try:
+        os.rename(os.path.join(dest_dir,old_filename+'.sbx'),os.path.join(dest_dir,new_filename+'.sbx')) # Rename sbn file
+    except Exception:
+        pass
 
-## Make the XY event layer...
-#arcpy.management.XYTableToPoint(in_table, out_feature_class,
-#                                x_coords, y_coords)
+#Rename layers in file geodatabase
