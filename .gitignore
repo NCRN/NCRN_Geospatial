@@ -15,3 +15,7 @@ npdes_outfalls_layer.ziprsj5u1e4.tmp
 *.json
 GOettelVSProject/Downloading/downloadData_v2.py
 GOettelVSProject/GIS-Directory-Template/create_ncrn_gis_standard.py
+.vs/NCRN_Geospatial/v17/.suo
+.vs/NCRN_Geospatial/v17/workspaceFileList.bin
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
