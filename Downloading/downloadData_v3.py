@@ -147,7 +147,7 @@ __RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logica
 __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sources.xlsx'
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Source', 'Local Directory', 'Folder Rename', 'File Name 1', 'File Rename 1', 'File Name 2', 'File Rename 2','File Name 3', 'File Rename 3', 'Feature Class Name 1', 'Feature Class Rename 1'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'File Name 1', 'File Rename 1', 'File Name 2', 'File Rename 2','File Name 3', 'File Rename 3', 'Feature Class Name 1', 'Feature Class Rename 1', 'Feature Class Name 2', 'Feature Class Rename 2', 'Feature Class Name 3', 'Feature Class Rename 3', 'Layer Delete Needed'])
 #print(df_NCRN_GIS_Data_Sources)
 
 ##Select sources where Status is URL
@@ -195,6 +195,9 @@ df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Source
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
+gis = GIS("https://arcgis.com", "ncrndata", "NCRNd@t@123!")
+print("Connected.")
+
 gis = GIS("pro")
 
 ##Select sources where Status is AGOL
@@ -228,41 +231,41 @@ df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sourc
 #            os.remove(fullpath_filename)
 #print(df_NCRN_GIS_Data_Sources_AGOL)
 
-##Select sources where Source Data Type is Shapefile and Status is URL
+##Select sources where Source Data Type is Shapefile
 df_NCRN_GIS_Data_Sources_Shapefile = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Source Data Type"] == 'Shapefile') & (df_NCRN_GIS_Data_Sources["Status"] == 'URL')]
 
 #Delete shapefiles
-for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
-    dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-    #unnecessary OSM layers
-    if row['Source'] == 'Open Street Map':
-        landuse = os.path.join(dest_path, 'gis_osm_landuse*')
-        natural = os.path.join(dest_path, 'gis_osm_natural*')
-        places = os.path.join(dest_path, 'gis_osm_places*')
-        pofw = os.path.join(dest_path, 'gis_osm_pofw*')
-        pois = os.path.join(dest_path, 'gis_osm_pois*')
-        traffic = os.path.join(dest_path, 'gis_osm_traffic*')
-        water = os.path.join(dest_path, 'gis_osm_water*')
-        transport = os.path.join(dest_path, 'gis_osm_transport*')
-        try:
-            for item in glob.iglob(landuse, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(natural, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(places, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(pofw, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(pois, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(traffic, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(water, recursive = True):
-                os.remove(item)
-            for item in glob.iglob(transport, recursive = True):
-                os.remove(item)
-        except Exception:
-            pass
+#for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
+#    dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+#    #unnecessary OSM layers
+#    if row['Delete Needed'] == 'Yes':
+#        landuse = os.path.join(dest_path, 'gis_osm_landuse*')
+#        natural = os.path.join(dest_path, 'gis_osm_natural*')
+#        places = os.path.join(dest_path, 'gis_osm_places*')
+#        pofw = os.path.join(dest_path, 'gis_osm_pofw*')
+#        pois = os.path.join(dest_path, 'gis_osm_pois*')
+#        traffic = os.path.join(dest_path, 'gis_osm_traffic*')
+#        water = os.path.join(dest_path, 'gis_osm_water*')
+#        transport = os.path.join(dest_path, 'gis_osm_transport*')
+#        try:
+#            for item in glob.iglob(landuse, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(natural, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(places, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(pofw, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(pois, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(traffic, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(water, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(transport, recursive = True):
+#                os.remove(item)
+#        except Exception:
+#            pass
 
 #Rename shapefiles
 for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
@@ -355,17 +358,18 @@ for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
 #Rename geodatabases
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if row['Source Data Type'] == 'File Geodatabase':
-        try:
+        if row['Status'] == 'URL':
             arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-            in_data = row['File Name 1']
-            out_data = row['File Rename 1']
-            data_type = "FileGeodatabase"
-            arcpy.management.Rename(in_data, out_data, data_type)
-        except Exception:
-            pass
+            try:    
+                in_data = row['File Name 1']
+                out_data = row['File Rename 1']
+                data_type = "FileGeodatabase"
+                arcpy.management.Rename(in_data, out_data, data_type)
+            except Exception:
+                pass
     elif row['Source Data Type']=='Multiple (File Geodatabase)':
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
         try:
-            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
             in_data = row['File Name 1']
             out_data = row['File Rename 1']
             data_type = "FileGeodatabase"
@@ -373,24 +377,52 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         except Exception:
             pass
 
-#Delete feature classes
-#unnecessary OSM layers
-#arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-
-## Set local variables
-#in_data = "majorrds.shp"
-#out_data = "majorrdscopy.shp"
-
-## Execute Copy
-#arcpy.Copy_management(in_data, out_data)
-
-## Execute Delete
-#arcpy.Delete_management(out_data) 
-
+#Delete feature classes in geodatabases
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    if row['Layer Delete Needed'] == 'Yes':
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+        #unnecessary TIGER layers
+        arcpy.management.Delete(r"'Block_Group';'Census_Tract';'Consolidated_City';'County_Subdivision';'Incorporated_Place'")
+        #unnecessary NWI layers    
+        arcpy.management.Delete(r"'District_of_Columbia'")
+        arcpy.management.Delete(r"'Maryland'")
+        arcpy.management.Delete(r"'Virginia'")
+        arcpy.management.Delete(r"'West_Virginia'")
+        #unnecessary 303(d) layers
+        if row['ID'] == 45:
+            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+            arcpy.management.Delete(r"'rad_303d.mxd'")
+ 
 #Rename feature classes in geodatabases
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if row['Source Data Type'] == 'File Geodatabase':
-        try:
+        if row['Status'] == 'URL':
+            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+            try:
+                in_data = row['Feature Class Name 1']
+                out_data = row['Feature Class Rename 1']
+                data_type = "FeatureClass"
+                arcpy.management.Rename(in_data, out_data, data_type)
+            except Exception:
+                pass
+            try:
+                arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+                in_data = row['Feature Class Name 2']
+                out_data = row['Feature Class Rename 2']
+                data_type = "FeatureClass"
+                arcpy.management.Rename(in_data, out_data, data_type)
+            except Exception:
+                pass
+            try:
+                arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+                in_data = row['Feature Class Name 3']
+                out_data = row['Feature Class Rename 3']
+                data_type = "FeatureClass"
+                arcpy.management.Rename(in_data, out_data, data_type)
+            except Exception:
+                pass
+    elif row['Source Data Type']=='Multiple (File Geodatabase)':
+        try:    
             arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
             in_data = row['Feature Class Name 1']
             out_data = row['Feature Class Rename 1']
@@ -398,13 +430,4 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             arcpy.management.Rename(in_data, out_data, data_type)
         except Exception:
             pass
-    elif row['Source Data Type']=='Multiple (File Geodatabase)':
-        try:
-            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
-            in_data = row['Feature Class Name 1']
-            out_data = row['Feature Class Rename 1']
-            data_type = "FeatureClass"
-            arcpy.management.Rename(in_data, out_data, data_type)
-        except Exception:
-           pass
 
