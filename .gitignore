@@ -25,3 +25,8 @@ GOettelVSProject/GIS-Directory-Template/create_ncrn_gis_standard.py
 .vs/NCRN_Geospatial/v17/workspaceFileList.bin
 .vs/slnx.sqlite
 NPDES_Discharge_Points.csv
+.vs/NCRN_Geospatial/v17/.suo
+*.bin
+*.sqlite
+*.json
+Downloads
