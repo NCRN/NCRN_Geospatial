@@ -153,12 +153,10 @@ __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sour
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
-
-
 gis = GIS("pro")
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'File Name 1', 'File Rename 1', 'File Name 2', 'File Rename 2','File Name 3', 'File Rename 3', 'File Name 4', 'File Rename 4', 'Feature Class Name 1', 'Feature Class Rename 1', 'Feature Class Name 2', 'Feature Class Rename 2', 'Feature Class Name 3', 'Feature Class Rename 3', 'Layer Delete Needed'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'File Name', 'New File Name', 'Feature Class Name 1', 'Feature Class Rename 1', 'Feature Class Name 2', 'Feature Class Rename 2', 'Feature Class Name 3', 'Feature Class Rename 3'])
 #print(df_NCRN_GIS_Data_Sources)
 
 ##Select sources where Status is URL
@@ -231,21 +229,76 @@ for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
             os.remove(fullpath_filename)
 print(df_NCRN_GIS_Data_Sources_AGOL)
 
-## NPDES Discharge Points xy table to point
+## Create geodatabases
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if row["ID"] == 47:
-        download_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-        gdb_path = os.path.join(__ROOT_DIR, row['Local Directory'], 'EPA.gdb')
-        #filename = os.path.join(dest_path, 'npdes_outfalls_layer.csv')
-        #df_npdes_outfalls_layer = pd.read_csv(filename, low_memory=False)
-        #df_npdes_outfalls_layer["latitude"] = df_npdes_outfalls_layer["LATITUDE83"].astype(float)
-        #df_npdes_outfalls_layer["longitude"] = df_npdes_outfalls_layer["LONGITUDE83"].astype(float)
-        #df_npdes_outfalls_layer.to_csv(os.path.join(dest_path, 'npdes_outfalls_layer_export.csv'))
-        #arcpy.management.XYTableToPoint(os.path.join(dest_path, "npdes_outfalls_layer_export.csv"), 
-        #                                os.path.join(dest_path, "npdes_outfalls_layer"), 
-        #                                "longitude", "latitude", None, 
-        #                                'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')
-        arcpy.management.XYTableToPoint(os.path.join(download_path, r'npdes_outfalls_layer_export.csv'), os.path.join(gdb_path, 'npdes_outfalls_layer'), "longitude", "latitude", None, 'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
+    #EPA
+    if row['Source'] == 'EPA':
+        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+        gdb_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
+        if os.path.exists(gdb_dir):
+            pass
+        else:
+            arcpy.CreateFileGDB_management(dest_dir, row['New File Name'])
+
+#Create feature classes for geodatabases
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    try:
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Name'])
+        #print('workspace: ', arcpy.env.workspace)
+        inFeatures = row['Feature Class Name 1']
+        #print('inFeature: ', inFeatures)
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
+        #print('outLocation: ', outLocation)
+        outFeatureClass = row['Feature Class Rename 1']
+        #print('outFeature: ', outFeatureClass)
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, 
+                                        outFeatureClass)
+    except Exception:
+        pass
+    try:
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Name'])
+        #print('workspace: ', arcpy.env.workspace)
+        inFeatures = row['Feature Class Name 2']
+        #print('inFeature: ', inFeatures)
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
+        #print('outLocation: ', outLocation)
+        outFeatureClass = row['Feature Class Rename 2']
+        #print('outFeature: ', outFeatureClass)
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, 
+                                        outFeatureClass)
+    except Exception:
+        pass
+    try:
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Name'])
+        #print('workspace: ', arcpy.env.workspace)
+        inFeatures = row['Feature Class Name 3']
+        #print('inFeature: ', inFeatures)
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
+        #print('outLocation: ', outLocation)
+        outFeatureClass = row['Feature Class Rename 3']
+        #print('outFeature: ', outFeatureClass)
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, 
+                                        outFeatureClass)
+    except Exception:
+        pass
+
+## NPDES Discharge Points xy table to point
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    if row["ID"] == 47:
+#        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+#        gdb_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
+#        input_csv = os.path.join(dest_path, 'npdes_outfalls_layer.csv')
+#        #df_npdes_outfalls_layer = pd.read_csv(input_csv, low_memory=False)
+#        #df_npdes_outfalls_layer["latitude"] = df_npdes_outfalls_layer["LATITUDE83"].astype(float)
+#        #df_npdes_outfalls_layer["longitude"] = df_npdes_outfalls_layer["LONGITUDE83"].astype(float)
+#        output_csv = os.path.join(dest_path, 'npdes_outfalls_layer_export.csv')
+#        #df_npdes_outfalls_layer.to_csv(csv_path)
+#        arcpy.management.XYTableToPoint(output_csv, 
+#                                        os.path.join(gdb_path, row["Feature Class Rename 1"]), 
+#                                        "longitude", "latitude", None, 
+#                                        'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
+#        os.remove(output_csv)
+
 ###Rename geodatabases
 #for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 #    if row['Source Data Type'] == 'File Geodatabase':

@@ -30,3 +30,6 @@ NPDES_Discharge_Points.csv
 *.sqlite
 *.json
 Downloads
+.vs/NCRN_Geospatial/v17/.suo
+.vs/NCRN_Geospatial/v17/workspaceFileList.bin
+.vs/slnx.sqlite
