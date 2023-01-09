@@ -23,44 +23,25 @@ TEST CHANGE
 
 
 # Import statements for utilized libraries / packages
+from ast import If
 import datetime
 import os
+import sys
 import pandas as pd
 import requests
 import shutil
 import wget
 import arcgis
 from arcgis.gis import GIS
+import pathlib
 from pathlib import Path, PurePath
+import zipfile
 from zipfile import ZipFile
+import arcpy
+import glob
 
 
-"""
-Set various global variables. Some of these could be parameterized to be used in an 
-ArcGIS Toolbox script and/or command line use. 
-Some of these global variables may not be in use yet.
-"""
-
-# Set the directory path to the root directory that will be documented
-__WORKSPACE = r'U:\GIS'
-
-# Set the directory path to the root directory that will be documented
-__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents'
-
-# Create a variable to store the file extension for file geodatabases
-__FGDB_EXT = '.gdb'
-
-# Create a variable to store the file extension for shapefiles
-__SHP_EXT = '.shp'
-
-# Create a list variable to store file extensions to be ignored
-__EXCLUDE_EXT = ['lock', 'gdbindexes', 'gdbtable', 'gdbtablx', 'horizon', 'spx', 'freelist', 'atx'] # Logical variable to parameterize for toolbox and/or command line (maybe)
-
-# Create a list variable to store the file extensions for rasters (that are outside of FGDBs)
-__RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logical variable to parameterize for toolbox and/or command line
-
-# Create a variable to store the full path to the GIS Library sources Excel file
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN-GIS-Data-Sources.xlsx'
+###Setup progress box
 
 def get_file_size_requests(url):
     """
@@ -138,20 +119,51 @@ def download_url_list_wget(out_dir, url_list):
     for url in url_list:
         download_url_wget(out_dir, url)
 
-########### TESTING ##########
+"""
+Set various global variables. Some of these could be parameterized to be used in an 
+ArcGIS Toolbox script and/or command line use. 
+Some of these global variables may not be in use yet.
+"""
+
+# Set the directory path to the root directory that will be documented
+__WORKSPACE = r'U:\GIS'
+
+# Set the directory path to the root directory that will be documented
+__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads'
+
+# Create a variable to store the file extension for file geodatabases
+__FGDB_EXT = '.gdb'
+
+# Create a variable to store the file extension for shapefiles
+__SHP_EXT = '.shp'
+
+# Create a list variable to store file extensions to be ignored
+__EXCLUDE_EXT = ['lock', 'gdbindexes', 'gdbtable', 'gdbtablx', 'horizon', 'spx', 'freelist', 'atx'] # Logical variable to parameterize for toolbox and/or command line (maybe)
+
+# Create a list variable to store the file extensions for rasters (that are outside of FGDBs)
+__RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logical variable to parameterize for toolbox and/or command line
+
+# Create a variable to store the full path to the GIS Library sources Excel file
+__XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sources.xlsx'
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Web File for Download', 'Local Directory'])
-
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols=['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'File Name 1', 'File Rename 1', 'File Name 2', 'File Rename 2','File Name 3', 'File Rename 3', 'File Name 4', 'File Rename 4', 'Feature Class Name 1', 'Feature Class Rename 1', 'Feature Class Name 2', 'Feature Class Rename 2', 'Feature Class Name 3', 'Feature Class Rename 3', 'Layer Delete Needed'])
 #print(df_NCRN_GIS_Data_Sources)
 
-##Select sources where Status = Ready
-df_NCRN_GIS_Data_Sources_ready = df_NCRN_GIS_Data_Sources[df_NCRN_GIS_Data_Sources["Status"]=='Ready']
+##Select sources where Status is URL
+df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Status"] == 'URL') & (df_NCRN_GIS_Data_Sources["Activated"]=='Yes')]
 
-for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
+#download urls
+for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
+    #Folder where the download will go
     dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
     #print('Download Destination: ', dest_dir)
+    #File path for the download
+    dest_path = os.path.join(dest_dir, row['Folder Rename'])
+    #print('Download File: ', dest_path)
+    #Define download link
     url = row['Web File for Download']
+    #Old file name of the url
     filename = url.split('/')[-1]
     #print('Filename: ', filename)
     ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
@@ -160,74 +172,294 @@ for index, row in df_NCRN_GIS_Data_Sources_ready.iterrows():
     #print('Full File Path: ', fullpath_filename)
     download_url_wget(dest_dir, url)
     if filename.endswith('.zip'):
-        print("'{0}' is unzipping...Please be patient!\n".format(filename))
+        #print("'{0}' is unzipping...Please be patient!\n".format(filename))
         shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-        print("Unzipped: {0}.\n".format(fullpath_filename))
+        #print("Unzipped: {0}.\n".format(fullpath_filename))
+        #delete zip file after extract
         os.remove(fullpath_filename)
+        #rename file
+        try:
+            os.rename(ext_dir_name, dest_path)
+        except Exception:
+            pass
+    else:     
+        try:
+            os.rename(fullpath_filename, dest_path)
+        except Exception:
+            pass
+print(df_NCRN_GIS_Data_Sources_URL)
 
-#print(df_NCRN_GIS_Data_Sources_ready)
+###Download feature service items from ArcGIS Online\
 
-#Download feature service items from ArcGIS Online
 #Specify the ArcGIS Online credentials to use.
 #gis = GIS("https://arcgis.com", "Username", "Password")
 #print("Connected.")
 
-# Download all data from a user
-#def downloadUserItems(owner, downloadFormat):
+gis = GIS("pro")
+
+###Select sources where Status is AGOL
+df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Status"] == 'AGOL') & (df_NCRN_GIS_Data_Sources["Activated"] == 'Yes')]
+
+##download AGOL content
+for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
+    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+    data_item_id = row['Data Item ID']
+    data_item = gis.content.get(data_item_id)
+    if row['Source Data Type']=='File Geodatabase':       
+        data_item.get_data()
+        filename = data_item.download(dest_dir)
+        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+        fullpath_filename = os.path.join(dest_dir, filename)
+        if filename.endswith('.zip'):
+            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+            #print("unzipped: {0}.\n".format(fullpath_filename))
+            os.remove(fullpath_filename)
+    elif row['Source Data Type']=='Multiple (File Geodatabase)':
+        data_item = data_item.export(title = row['Folder Rename'], export_format = "File Geodatabase", wait = True)
+        data_item.get_data()
+        filename = data_item.download(dest_dir)
+        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+        fullpath_filename = os.path.join(dest_dir, filename)
+        if filename.endswith('.zip'):
+            #print("'{0}' is unzipping...please be patient!\n".format(filename))
+            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+            #print("unzipped: {0}.\n".format(fullpath_filename))
+            os.remove(fullpath_filename)
+print(df_NCRN_GIS_Data_Sources_AGOL)
+
+####Select sources where Source Data Type is Shapefile
+#df_NCRN_GIS_Data_Sources_Shapefile = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Source Data Type"] == 'Shapefile') & (df_NCRN_GIS_Data_Sources["Status"] == 'URL')]
+
+###Delete shapefiles
+#for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
+#    dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+#    #unnecessary OSM layers
+#    if row['Layer Delete Needed'] == 'Yes':
+#        landuse = os.path.join(dest_path, 'gis_osm_landuse*')
+#        natural = os.path.join(dest_path, 'gis_osm_natural*')
+#        places_a = os.path.join(dest_path, 'gis_osm_places_a*')
+#        pofw = os.path.join(dest_path, 'gis_osm_pofw*')
+#        pois = os.path.join(dest_path, 'gis_osm_pois*')
+#        traffic = os.path.join(dest_path, 'gis_osm_traffic*')
+#        water = os.path.join(dest_path, 'gis_osm_water*')
+#        transport = os.path.join(dest_path, 'gis_osm_transport*')
+#        try:
+#            for item in glob.iglob(landuse, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(natural, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(places_a, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(pofw, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(pois, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(traffic, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(water, recursive = True):
+#                os.remove(item)
+#            for item in glob.iglob(transport, recursive = True):
+#                os.remove(item)
+#        except Exception:
+#            pass
+        
+###Rename shapefiles
+#for index, row in df_NCRN_GIS_Data_Sources_Shapefile.iterrows():
+#    dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
 #    try:
-#        group = gis.groups.search(query = 'title: "NCR Regional Datasets INTERNAL Download"')
-#        for group_item in group.content():
-#            print(group_item)
-#        # Search items by username
-#        #items = gis.content.search(query='owner:ncrgis', item_type='File Geodatabase')
-#        #print(items)
-#        ## Loop through each item and if equal to Feature Service then download it
-#        #for item in items:
-#        #    print(item)
-#        #    result = item.export(item.title, downloadFormat)
-#        #    data_path = Path(r'C:\Users\goettel\OneDrive - DOI\Documents\GIS\Geodata\NPS_Regional_Data')
-#        #    result.download(save_path=data_path)
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.cpg'), os.path.join(dest_path, row['File Rename 1'] + '.cpg'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.dbf'), os.path.join(dest_path, row['File Rename 1'] + '.dbf'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.prj'), os.path.join(dest_path, row['File Rename 1'] + '.prj'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.shp'), os.path.join(dest_path, row['File Rename 1'] + '.shp'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.shx'), os.path.join(dest_path, row['File Rename 1'] + '.shx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.sbn'), os.path.join(dest_path, row['File Rename 1'] + '.sbn'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 1'] + '.sbx'), os.path.join(dest_path, row['File Rename 1'] + '.sbx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.cpg'), os.path.join(dest_path, row['File Rename 2'] + '.cpg'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.dbf'), os.path.join(dest_path, row['File Rename 2'] + '.dbf'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.prj'), os.path.join(dest_path, row['File Rename 2'] + '.prj'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.shp'), os.path.join(dest_path, row['File Rename 2'] + '.shp'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.shx'), os.path.join(dest_path, row['File Rename 2'] + '.shx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.sbn'), os.path.join(dest_path, row['File Rename 2'] + '.sbn'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 2'] + '.sbx'), os.path.join(dest_path, row['File Rename 2'] + '.sbx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.cpg'), os.path.join(dest_path, row['File Rename 3'] + '.cpg'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.dbf'), os.path.join(dest_path, row['File Rename 3'] + '.dbf'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.prj'), os.path.join(dest_path, row['File Rename 3'] + '.prj'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.shp'), os.path.join(dest_path, row['File Rename 3'] + '.shp'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.shx'), os.path.join(dest_path, row['File Rename 3'] + '.shx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.sbn'), os.path.join(dest_path, row['File Rename 3'] + '.sbn'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 3'] + '.sbx'), os.path.join(dest_path, row['File Rename 3'] + '.sbx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.cpg'), os.path.join(dest_path, row['File Rename 4'] + '.cpg'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.dbf'), os.path.join(dest_path, row['File Rename 4'] + '.dbf'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.prj'), os.path.join(dest_path, row['File Rename 4'] + '.prj'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.shp'), os.path.join(dest_path, row['File Rename 4'] + '.shp'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.shx'), os.path.join(dest_path, row['File Rename 4'] + '.shx'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.sbn'), os.path.join(dest_path, row['File Rename 4'] + '.sbn'))
+#    except Exception:
+#        pass
+#    try:
+#        os.rename(os.path.join(dest_path, row['File Name 4'] + '.sbx'), os.path.join(dest_path, row['File Rename 4'] + '.sbx'))
+#    except Exception:
+#        pass
 
-## Function takes in two parameters. Username, and the type of download format.
-#downloadUserItems('ncrgis', downloadFormat='File Geodatabase')
-#print("All items downloaded")
+###Rename geodatabases
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    if row['Source Data Type'] == 'File Geodatabase':
+#        if row['Status'] == 'URL':
+#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+#            try:    
+#                in_data = row['File Name 1']
+#                out_data = row['File Rename 1']
+#                data_type = "FileGeodatabase"
+#                arcpy.management.Rename(in_data, out_data, data_type)
+#            except Exception:
+#                pass
+#    elif row['Source Data Type']=='Multiple (File Geodatabase)':
+#        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+#        try:
+#            in_data = row['File Name 1']
+#            out_data = row['File Rename 1']
+#            data_type = "FileGeodatabase"
+#            arcpy.management.Rename(in_data, out_data, data_type)
+#        except Exception:
+#            pass
 
-#def download_ncr_gdb(download_path, file_type):
-#    groups = gis.groups.search(query = 'title: "NCR Regional Datasets INTERNAL Download"')
-#    for group in groups:
-#        for group_item in group.content():
-#            #print(group_item)
-#            if group_item.title == 'NCR Regional Geodatabase INTERNAL':
-#                result = group_item.export(group_item.title, file_type)
-#                result.download(save_path = download_path)
-#                print('Successfully downloaded file! (in theory)')
+###Delete feature classes in geodatabases
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    if row['Layer Delete Needed'] == 'Yes':
+#        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+#        #unnecessary TIGER layers
+#        arcpy.management.Delete(r"'Block_Group';'Census_Tract';'Consolidated_City';'County_Subdivision';'Incorporated_Place'")
+#        #unnecessary NWI layers    
+#        arcpy.management.Delete(r"'District_of_Columbia'")
+#        arcpy.management.Delete(r"'Maryland'")
+#        arcpy.management.Delete(r"'Virginia'")
+#        arcpy.management.Delete(r"'West_Virginia'")
+#        #unnecessary 303(d) layers
+#        if row['ID'] == 45:
+#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+#            arcpy.management.Delete(r"'rad_303d.mxd'")
+ 
+###Rename feature classes in geodatabases
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    if row['Source Data Type'] == 'File Geodatabase':
+#        if row['Status'] == 'URL':
+#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+#            try:
+#                in_data = row['Feature Class Name 1']
+#                out_data = row['Feature Class Rename 1']
+#                data_type = "FeatureClass"
+#                arcpy.management.Rename(in_data, out_data, data_type)
+#            except Exception:
+#                pass
+#            try:
+#                arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+#                in_data = row['Feature Class Name 2']
+#                out_data = row['Feature Class Rename 2']
+#                data_type = "FeatureClass"
+#                arcpy.management.Rename(in_data, out_data, data_type)
+#            except Exception:
+#                pass
+#            try:
+#                arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+#                in_data = row['Feature Class Name 3']
+#                out_data = row['Feature Class Rename 3']
+#                data_type = "FeatureClass"
+#                arcpy.management.Rename(in_data, out_data, data_type)
+#            except Exception:
+#                pass
+#    elif row['Source Data Type']=='Multiple (File Geodatabase)':
+#        try:    
+#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
+#            in_data = row['Feature Class Name 1']
+#            out_data = row['Feature Class Rename 1']
+#            data_type = "FeatureClass"
+#            arcpy.management.Rename(in_data, out_data, data_type)
+#        except Exception:
+#            pass
 
-download_path = r'C:\Users\goettel\OneDrive - DOI\Documents\GIS\Geodata\NPS_Regional_Data'
-#file_type = 'File Geodatabase'
-
-#download_ncr_gdb(download_path, file_type)
-
-# 'NCR Regional Geodatabase INTERNAL' = 'NCR_Regional_Datasets_INTERNAL.gdb.zip
-#gdb_item = gis.content.get('b3c18dafc7de437bb1621b77f6669c8a')
-##gdb_item.get_data()
-#path = gdb_item.download(download_path)
-
-
-## Full list of NWI URLs for testing
-#wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip', 
-#                r'https://www.fws.gov/wetlands/Data/State-Downloads/MD_shapefile_wetlands.zip',
-#                r'https://www.fws.gov/wetlands/Data/State-Downloads/VA_shapefile_wetlands.zip',
-#                r'https://www.fws.gov/wetlands/Data/State-Downloads/WV_shapefile_wetlands.zip']
-
-## Partial list of NWI URLs for testing
-#wetland_urls = [r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip']
-
-## Out directory for testing downloads
-#out_dir = r'C:\Users\goettel\OneDrive - DOI\Documents\GitHub\NCRN_Geospatial\Downloading\Downloads'
-
-## Test get_file_size_requests on list or ZIP URLs
-#for url in wetland_urls:
-#    print(get_file_size_requests(url))
-
-## Test download_url_wget on NWI Wetlands ZIP URLs
-#download_url_wget(out_dir, wetland_urls)
+##xy table to point
+#path = os.path.join(__ROOT_DIR, r'GIS\Geodata\Basedata\Vector\Water\EPA\NPDES_Discharge_Points')
+#file_path = os.path.join(path, 'npdes_outfalls_layer.csv')
+#NPDES_Discharge_Points = pd.read_csv(file_path, low_memory=False)
+#NPDES_Discharge_Points["LATITUDE83_num"] = NPDES_Discharge_Points["LATITUDE83"].astype("int")
+#NPDES_Discharge_Points["LONGITUDE83_num"] = NPDES_Discharge_Points["LONGITUDE83"].astype("int")
+#NPDES_Discharge_Points.to_csv(path/'NPDES_Discharge_Points.csv')

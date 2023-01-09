@@ -175,7 +175,6 @@ monloc_fields_list = [
                         ['UNITCODE','TEXT','','',10,'UNITCODE','NULLABLE','NON_REQUIRED',''],
                         ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
                         ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
-                        ['UNITTYPE','TEXT','','',254,'UNITTYPE','NULLABLE','NON_REQUIRED',''],
                         ['SITENAME','TEXT','','',254,'SITENAME','NULLABLE','NON_REQUIRED',''],
                         ['HABITATTYPE','TEXT','','',25,'HABITATTYPE','NULLABLE','NON_REQUIRED',''],
                         ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
