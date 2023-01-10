@@ -156,7 +156,7 @@ __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sour
 gis = GIS("pro")
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'File Name', 'New File Name', 'Feature Class Name 1', 'Feature Class Rename 1', 'Feature Class Name 2', 'Feature Class Rename 2', 'Feature Class Name 3', 'Feature Class Rename 3'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'Geodatabase Name', 'New Geodatabase Name', 'File Name 1', 'Feature Class Rename 1', 'File Name 2', 'Feature Class Rename 2', 'File Name 3', 'Feature Class Rename 3', 'File Name 4'])
 #print(df_NCRN_GIS_Data_Sources)
 
 ##Select sources where Status is URL
@@ -183,17 +183,19 @@ for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
     if filename.endswith('.zip'):
         #print("'{0}' is unzipping...Please be patient!\n".format(filename))
         shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-        #print("Unzipped: {0}.\n".format(fullpath_filename))
+        print("Unzipped: {0}.\n".format(fullpath_filename))
         #delete zip file after extract
         os.remove(fullpath_filename)
         #rename file
         try:
             os.rename(ext_dir_name, dest_path)
+            print("Rename complete")
         except Exception:
             pass
     else:     
         try:
             os.rename(fullpath_filename, dest_path)
+            print("Rename complete")
         except Exception:
             pass
 print(df_NCRN_GIS_Data_Sources_URL)
@@ -214,7 +216,7 @@ for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
         if filename.endswith('.zip'):
             #print("'{0}' is unzipping...please be patient!\n".format(filename))
             shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-            #print("unzipped: {0}.\n".format(fullpath_filename))
+            print("unzipped: {0}.\n".format(fullpath_filename))
             os.remove(fullpath_filename)
     elif row['Source Data Type']=='Multiple (File Geodatabase)':
         data_item = data_item.export(title = row['Folder Rename'], export_format = "File Geodatabase", wait = True)
@@ -225,66 +227,153 @@ for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
         if filename.endswith('.zip'):
             #print("'{0}' is unzipping...please be patient!\n".format(filename))
             shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-            #print("unzipped: {0}.\n".format(fullpath_filename))
+            print("unzipped: {0}.\n".format(fullpath_filename))
             os.remove(fullpath_filename)
 print(df_NCRN_GIS_Data_Sources_AGOL)
 
-## Create geodatabases
+##Rename geodatabases
+print('Checking for Geodatabases to rename...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #EPA
-    if row['Source'] == 'EPA':
-        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-        gdb_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
-        if os.path.exists(gdb_dir):
+    #HIFLD, NHDPlus, TIGER
+    if ((row['ID'] == 3) or (row['ID'] == 20) or (row['ID'] == 21) or (row['ID'] == 22)):
+        try:
+            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+            in_data = row['Geodatabase Name']
+            out_data = row['New Geodatabase Name']
+            data_type = "FileGeodatabase"
+            arcpy.management.Rename(in_data, out_data, data_type)
+            print('Geodatabase renamed as: ', row['New Geodatabase Name'])
+        except Exception:
             pass
-        else:
-            arcpy.CreateFileGDB_management(dest_dir, row['New File Name'])
+
+## Create geodatabases
+print('Checking for new Geodatabases to create...')
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    #OSM, 
+    if ((row['ID'] == 23) or (row['ID'] == 40) or (row['ID'] == 44) or (row['ID'] == 45)):
+        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        if os.path.exists(dest_path):
+            pass
+        else: 
+            arcpy.CreateFileGDB_management(dest_dir, row['New Geodatabase Name'])
+            print('Created Geodatabase: ', row['New Geodatabase Name'])
+
+#Merge feature classes
+print('Checking for feature classes to merge...')
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    #TIGER    
+    if row['ID'] == 22:
+        try:
+            dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+            fc1 = os.path.join(dest_dir, row['File Name 3'])
+            fc2 = os.path.join(dest_dir, row['File Name 4'])
+            output = os.path.join(dest_dir, row['Feature Class Rename 3'])
+            arcpy.env.workspace = dest_dir
+            arcpy.management.Merge([fc1, fc2], output)
+            print('Merged feature class: ', row['Feature Class Rename 3'])
+        except Exception:
+            pass
+    #NWI, OSM
+    if ((row['ID'] == 40) or (row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)):
+        try:
+            dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+            fc1 = os.path.join(dest_dir, row['File Name 1'])
+            fc2 = os.path.join(dest_dir, row['File Name 2'])
+            fc3 = os.path.join(dest_dir, row['File Name 3'])
+            fc4 = os.path.join(dest_dir, row['File Name 4'])
+            output = os.path.join(dest_dir, row['New Geodatabase Name'], row['Feature Class Rename 1'])
+            arcpy.env.workspace = dest_dir
+            arcpy.management.Merge([fc1, fc2, fc3, fc4], output)
+            print('Merged feature class: ', row['Feature Class Rename 1'])
+        except Exception:
+            pass
+                
+#Merge rasters
 
 #Create feature classes for geodatabases
+print('Checking for new Feature Classes to create...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Name'])
-        #print('workspace: ', arcpy.env.workspace)
-        inFeatures = row['Feature Class Name 1']
-        #print('inFeature: ', inFeatures)
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
-        #print('outLocation: ', outLocation)
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['Geodatabase Name'])
+        inFeatures = row['File Name 1']
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
         outFeatureClass = row['Feature Class Rename 1']
-        #print('outFeature: ', outFeatureClass)
-        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, 
-                                        outFeatureClass)
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
+        print('Created feature class: ', row['Feature Class Rename 1'])
     except Exception:
         pass
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Name'])
-        #print('workspace: ', arcpy.env.workspace)
-        inFeatures = row['Feature Class Name 2']
-        #print('inFeature: ', inFeatures)
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
-        #print('outLocation: ', outLocation)
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+        inFeatures = row['File Name 1']
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        outFeatureClass = row['Feature Class Rename 1']
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
+        print('Created feature class: ', row['Feature Class Rename 1'])
+    except Exception:
+        pass
+    try:
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['Geodatabase Name'])
+        inFeatures = row['File Name 2']
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
         outFeatureClass = row['Feature Class Rename 2']
-        #print('outFeature: ', outFeatureClass)
-        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, 
-                                        outFeatureClass)
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
+        print('Created feature class: ', row['Feature Class Rename 2'])
     except Exception:
         pass
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Name'])
-        #print('workspace: ', arcpy.env.workspace)
-        inFeatures = row['Feature Class Name 3']
-        #print('inFeature: ', inFeatures)
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
-        #print('outLocation: ', outLocation)
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['Geodatabase Name'])
+        inFeatures = row['File Name 3']
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
         outFeatureClass = row['Feature Class Rename 3']
-        #print('outFeature: ', outFeatureClass)
-        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, 
-                                        outFeatureClass)
+        arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
+        print('Created feature class: ', row['Feature Class Rename 3'])
     except Exception:
         pass
+ 
+##Rename feature classes in geodatabases
+print('Checking for Feature Classes to rename...')
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    try:
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+        in_data = row['File Name 1']
+        out_data = row['Feature Class Rename 1']
+        data_type = "FeatureClass"
+        arcpy.management.Rename(in_data, out_data, data_type)
+        print('Feature class renamed as: ', row['Feature Class Rename 1'])
+    except Exception:
+        pass
+    try:
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+        in_data = row['File Name 2']
+        out_data = row['Feature Class Rename 2']
+        data_type = "FeatureClass"
+        arcpy.management.Rename(in_data, out_data, data_type)
+        print('Feature class renamed as: ', row['Feature Class Rename 2'])
+    except Exception:
+        pass
+
+##Remove feature classes
+print('Checking for Feature Classes to remove...')
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    #TIGER
+    if row['ID'] == 22:
+        try:
+            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+            fc1 = 'Block_Group'
+            fc2 = 'Census_Tract'
+            fc3 = 'Consolidated_City'
+            fc4 = 'County_Subdivision'
+            fc5 = 'Census_Designated_Place'
+            fc6 = 'Incorporated_Place'
+            arcpy.management.Delete(fc1, fc2, fc3, fc4, fc5, fc6)
+            print('Removed: ', fc1, fc2, fc3, fc4, fc5, fc6)
+        except Exception:
+            pass
 
 ## NPDES Discharge Points xy table to point
 #for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-#    if row["ID"] == 47:
+#    if row['ID'] == 47:
 #        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
 #        gdb_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New File Name'])
 #        input_csv = os.path.join(dest_path, 'npdes_outfalls_layer.csv')
@@ -293,83 +382,10 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 #        #df_npdes_outfalls_layer["longitude"] = df_npdes_outfalls_layer["LONGITUDE83"].astype(float)
 #        output_csv = os.path.join(dest_path, 'npdes_outfalls_layer_export.csv')
 #        #df_npdes_outfalls_layer.to_csv(csv_path)
+#        print('Exported CSV'])
 #        arcpy.management.XYTableToPoint(output_csv, 
 #                                        os.path.join(gdb_path, row["Feature Class Rename 1"]), 
 #                                        "longitude", "latitude", None, 
 #                                        'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
+#        print('xy table to point was successful')
 #        os.remove(output_csv)
-
-###Rename geodatabases
-#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-#    if row['Source Data Type'] == 'File Geodatabase':
-#        if row['Status'] == 'URL':
-#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-#            try:    
-#                in_data = row['File Name 1']
-#                out_data = row['File Rename 1']
-#                data_type = "FileGeodatabase"
-#                arcpy.management.Rename(in_data, out_data, data_type)
-#            except Exception:
-#                pass
-#    elif row['Source Data Type']=='Multiple (File Geodatabase)':
-#        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-#        try:
-#            in_data = row['File Name 1']
-#            out_data = row['File Rename 1']
-#            data_type = "FileGeodatabase"
-#            arcpy.management.Rename(in_data, out_data, data_type)
-#        except Exception:
-#            pass
-
-###Delete feature classes in geodatabases
-#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-#    if row['Layer Delete Needed'] == 'Yes':
-#        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
-#        #unnecessary TIGER layers
-#        arcpy.management.Delete(r"'Block_Group';'Census_Tract';'Consolidated_City';'County_Subdivision';'Incorporated_Place'")
-#        #unnecessary NWI layers    
-#        arcpy.management.Delete(r"'District_of_Columbia'")
-#        arcpy.management.Delete(r"'Maryland'")
-#        arcpy.management.Delete(r"'Virginia'")
-#        arcpy.management.Delete(r"'West_Virginia'")
-#        #unnecessary 303(d) layers
-#        if row['ID'] == 45:
-#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-#            arcpy.management.Delete(r"'rad_303d.mxd'")
- 
-###Rename feature classes in geodatabases
-#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-#    if row['Source Data Type'] == 'File Geodatabase':
-#        if row['Status'] == 'URL':
-#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
-#            try:
-#                in_data = row['Feature Class Name 1']
-#                out_data = row['Feature Class Rename 1']
-#                data_type = "FeatureClass"
-#                arcpy.management.Rename(in_data, out_data, data_type)
-#            except Exception:
-#                pass
-#            try:
-#                arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
-#                in_data = row['Feature Class Name 2']
-#                out_data = row['Feature Class Rename 2']
-#                data_type = "FeatureClass"
-#                arcpy.management.Rename(in_data, out_data, data_type)
-#            except Exception:
-#                pass
-#            try:
-#                arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
-#                in_data = row['Feature Class Name 3']
-#                out_data = row['Feature Class Rename 3']
-#                data_type = "FeatureClass"
-#                arcpy.management.Rename(in_data, out_data, data_type)
-#            except Exception:
-#                pass
-#    elif row['Source Data Type']=='Multiple (File Geodatabase)':
-#        try:    
-#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['File Rename 1'])
-#            in_data = row['Feature Class Name 1']
-#            out_data = row['Feature Class Rename 1']
-#            data_type = "FeatureClass"
-#            arcpy.management.Rename(in_data, out_data, data_type)
-###

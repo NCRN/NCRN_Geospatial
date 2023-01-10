@@ -1,9 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Downloading",
-    "\\GIS-Directory-Template",
-    "\\Summarize-Watersheds"
+    "\\Downloading"
   ],
   "SelectedNode": "\\Downloading\\downloadData_v3.py",
   "PreviewInSolutionExplorer": false
