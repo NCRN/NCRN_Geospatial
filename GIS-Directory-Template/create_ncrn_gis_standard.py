@@ -107,8 +107,6 @@ domain_values_list = [[arcpy.env.workspace, 'DOM_DATAACCESS_NPS2016', 'Unrestric
                         [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Marsh River', 'Marsh River'],
                         [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Marsh Creek', 'Marsh Creek'],
                         [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Marsh Interior', 'Marsh Interior'],
-                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Lentic', 'Lentic'],
-                        [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Lotic', 'Lotic'],
                         [arcpy.env.workspace, 'DOM_HABITATTYPE_IMD2022', 'Other', 'Other'],
                         [arcpy.env.workspace, 'DOM_INDICATORCAT_IMD2022', 'Weather and climate', 'Weather and climate'],
                         [arcpy.env.workspace, 'DOM_INDICATORCAT_IMD2022', 'Water chemistry', 'Water chemistry'],

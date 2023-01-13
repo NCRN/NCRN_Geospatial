@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Downloading"
+    "\\Downloading",
+    "\\GIS-Directory-Template"
   ],
+  "SelectedNode": "\\GIS-Directory-Template\\create_ncrn_gis_standard.py",
   "PreviewInSolutionExplorer": false
 }

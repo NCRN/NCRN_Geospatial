@@ -264,7 +264,8 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         else: 
             arcpy.CreateFileGDB_management(dest_dir, row['New GDB Name'])
             print('Created Geodatabase: ', row['New GDB Name'])
-    elif row['ID'] == 35:
+    #NED, STATSGO2        
+    elif ((row['ID'] == 35) or (row['ID'] == 63)):
         dest_dir = os.path.join(__ROOT_DIR, row['New GDB Directory'])
         dest_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
         if os.path.exists(dest_path):
@@ -440,12 +441,12 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 pass
 
 #Create hillshading layer
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if row['ID'] == 35:
-        #try:
-            print('Running HillShade...')
-            env.workspace = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
-            inRaster = row['Feature Class Rename 1']
-            outHillShade = Hillshade(inRaster, 315, 45, "NO_SHADOWS", 1); outHillShade.save(os.path.join(env.workspace, row['Feature Class Rename 2']))
-        #except Exception:
-        #        pass
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    if row['ID'] == 35:
+#        try:
+#            print('Running HillShade...')
+#            env.workspace = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+#            inRaster = row['Feature Class Rename 1']
+#            outHillShade = Hillshade(inRaster, 315, 45, "NO_SHADOWS", 1); outHillShade.save(os.path.join(env.workspace, row['Feature Class Rename 2']))
+#        except Exception:
+#                pass
