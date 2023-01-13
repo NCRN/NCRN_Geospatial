@@ -38,7 +38,9 @@ from pathlib import Path, PurePath
 import zipfile
 from zipfile import ZipFile
 import arcpy
+arcpy.CheckOutExtension("Spatial")
 from arcpy import env
+from arcpy.sa import *
 import glob
 
 
@@ -157,7 +159,7 @@ __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sour
 gis = GIS("pro")
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'Geodatabase Name', 'New Geodatabase Name', 'File Name 1', 'Feature Class Rename 1', 'File Name 2', 'Feature Class Rename 2', 'File Name 3', 'Feature Class Rename 3', 'File Name 4', 'File Name 5', 'File Name 6'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'GDB Name', 'New GDB Directory', 'New GDB Name', 'File Name 1', 'Feature Class Rename 1', 'File Name 2', 'Feature Class Rename 2', 'File Name 3', 'Feature Class Rename 3', 'File Name 4', 'File Name 5'])
 #print(df_NCRN_GIS_Data_Sources)
 
 ##Select sources where Status is URL
@@ -242,11 +244,11 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if ((row['ID'] == 20) or (row['ID'] == 21) or (row['ID'] == 22)):
         try:
             arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-            in_data = row['Geodatabase Name']
-            out_data = row['New Geodatabase Name']
+            in_data = row['GDB Name']
+            out_data = row['New GDB Name']
             data_type = "FileGeodatabase"
             arcpy.management.Rename(in_data, out_data, data_type)
-            print('Geodatabase renamed as: ', row['New Geodatabase Name'])
+            print('Geodatabase renamed as: ', row['New GDB Name'])
         except Exception:
             pass
 
@@ -256,12 +258,20 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #HIFLD/OSM, NWI, USGS, EPA  
     if  ((row['ID'] == 3) or (row['ID'] == 40) or (row['ID'] == 44) or (row['ID'] == 45)):
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         if os.path.exists(dest_path):
             pass
         else: 
-            arcpy.CreateFileGDB_management(dest_dir, row['New Geodatabase Name'])
-            print('Created Geodatabase: ', row['New Geodatabase Name'])
+            arcpy.CreateFileGDB_management(dest_dir, row['New GDB Name'])
+            print('Created Geodatabase: ', row['New GDB Name'])
+    elif row['ID'] == 35:
+        dest_dir = os.path.join(__ROOT_DIR, row['New GDB Directory'])
+        dest_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+        if os.path.exists(dest_path):
+            pass
+        else: 
+            arcpy.CreateFileGDB_management(dest_dir, row['New GDB Name'])
+            print('Created Geodatabase: ', row['New GDB Name'])
 
 #Merge feature classes
 print('Checking for feature classes to merge...')
@@ -269,7 +279,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #TIGER
     if row['ID'] == 22:
         try:
-            dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+            dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New GDB Name'])
             fc1 = os.path.join(dest_dir, row['File Name 3'])
             fc2 = os.path.join(dest_dir, row['File Name 4'])
             output = os.path.join(dest_dir, row['Feature Class Rename 3'])
@@ -282,7 +292,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     elif ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)):
         try:
             input_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-            gdb_path = os.path.join(__ROOT_DIR, row['New Geodatabase Name'])
+            gdb_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
             fc1 = os.path.join(dest_dir, row['File Name 1'])
             fc2 = os.path.join(dest_dir, row['File Name 2'])
             fc3 = os.path.join(dest_dir, row['File Name 3'])
@@ -301,45 +311,36 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             fc2 = os.path.join(dest_dir, row['File Name 2'])
             fc3 = os.path.join(dest_dir, row['File Name 3'])
             fc4 = os.path.join(dest_dir, row['File Name 4'])
-            output = os.path.join(dest_dir, row['New Geodatabase Name'], row['Feature Class Rename 1'])
+            output = os.path.join(dest_dir, row['New GDB Name'], row['Feature Class Rename 1'])
             arcpy.env.workspace = dest_dir
             arcpy.management.Merge([fc1, fc2, fc3, fc4], output)
             print('Merged feature class: ', row['Feature Class Rename 1'])
         except Exception:
             pass
                 
-#Merge rasters
+##Merge rasters
 print('Checking for rasters to merge...')
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #NED
-    if row['ID'] == 35:
-        env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-        try:
-            input_rasters = (row['File Name 1'], row['File Name 2'], row['File Name 3'], row['File Name 4'], row['File Name 5'])
-            output_location = os.path.join(__ROOT_DIR, row['New Geodatabase Name'])
-            raster_dataset_name_with_extension = row['Feature Class Rename 1']
-            arcpy.management.MosaicToNewRaster(input_rasters, 
-                                                output_location,
-                                                raster_dataset_name_with_extension,
-                                                'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]', 
-                                                "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
-            #Rename output
-            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['New Geodatabase Name'])
-            in_data = row['File Name 6']
-            out_data = row['Feature Class Rename 1']
-            data_type = "FeatureClass"
-            arcpy.management.Rename(in_data, out_data, data_type)
-            print('Merged raster: ', out_data)
-        except Exception:
-            pass
+    #if row['ID'] == 35:
+    #    try:
+    #        env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
+    #        input_rasters = (row['File Name 1'], row['File Name 2'], row['File Name 3'], row['File Name 4'], row['File Name 5'])
+    #        output_location = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+    #        raster_dataset_name_with_extension = row['Feature Class Rename 1']
+    #        arcpy.management.MosaicToNewRaster(input_rasters, output_location, raster_dataset_name_with_extension,
+    #                                            'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
+    #                                            "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
+    #    except Exception:
+    #        pass
 
 #Create feature classes for geodatabases
 print('Checking for new Feature Classes to create...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['Geodatabase Name'])
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['GDB Name'])
         inFeatures = row['File Name 1']
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         outFeatureClass = row['Feature Class Rename 1']
         arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
         print('Created feature class: ', outFeatureClass)
@@ -348,25 +349,25 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     try:
         arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
         inFeatures = row['File Name 1']
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         outFeatureClass = row['Feature Class Rename 1']
         arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
         print('Created feature class: ', outFeatureClass)
     except Exception:
         pass
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['Geodatabase Name'])
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['GDB Name'])
         inFeatures = row['File Name 2']
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         outFeatureClass = row['Feature Class Rename 2']
         arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
         print('Created feature class: ', outFeatureClass)
     except Exception:
         pass
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['Geodatabase Name'])
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['GDB Name'])
         inFeatures = row['File Name 3']
-        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New Geodatabase Name'])
+        outLocation = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         outFeatureClass = row['Feature Class Rename 3']
         arcpy.FeatureClassToFeatureClass_conversion(inFeatures, outLocation, outFeatureClass)
         print('Created feature class: ', outFeatureClass)
@@ -377,7 +378,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 print('Checking for Feature Classes to rename...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New GDB Name'])
         in_data = row['File Name 1']
         out_data = row['Feature Class Rename 1']
         data_type = "FeatureClass"
@@ -386,7 +387,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     except Exception:
         pass
     try:
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New GDB Name'])
         in_data = row['File Name 2']
         out_data = row['Feature Class Rename 2']
         data_type = "FeatureClass"
@@ -401,7 +402,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #TIGER
     if row['ID'] == 22:
         try:
-            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New Geodatabase Name'])
+            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New GDB Name'])
             fc1 = 'Block_Group'
             fc2 = 'Census_Tract'
             fc3 = 'Consolidated_City'
@@ -439,3 +440,12 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 pass
 
 #Create hillshading layer
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    if row['ID'] == 35:
+        #try:
+            print('Running HillShade...')
+            env.workspace = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+            inRaster = row['Feature Class Rename 1']
+            outHillShade = Hillshade(inRaster, 315, 45, "NO_SHADOWS", 1); outHillShade.save(os.path.join(env.workspace, row['Feature Class Rename 2']))
+        #except Exception:
+        #        pass
