@@ -159,115 +159,113 @@ __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sour
 gis = GIS("pro")
 
 ###Read excel into dataframe using Pandas
-df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Activated', 'Source Data Type', 'Web File for Download', 'Data Item ID', 'Local Directory', 'Folder Rename', 'GDB Name', 'New GDB Directory', 'New GDB Name', 'File Name 1', 'Feature Class Rename 1', 'File Name 2', 'Feature Class Rename 2', 'File Name 3', 'Feature Class Rename 3', 'File Name 4', 'File Name 5'])
+df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Source Type', 'Activated', 'Source Data Type', 'Web File for Download', 'Items', 'Data Item ID', 'Local Directory', 'Folder Rename', 'GDB Name', 'New GDB Directory', 'New GDB Name', 'File Names', 'File Renames'])
 #print(df_NCRN_GIS_Data_Sources)
 
-##Select sources where Status is URL
-df_NCRN_GIS_Data_Sources_URL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Status"] == 'URL') & (df_NCRN_GIS_Data_Sources["Activated"]=='Yes')]
-
 #download urls
-for index, row in df_NCRN_GIS_Data_Sources_URL.iterrows():
-    #Folder where the download will go
-    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-    #print('Download Destination: ', dest_dir)
-    #File path for the download
-    try:
-        dest_path = os.path.join(dest_dir, row['Folder Rename'])
-    except Exception:
-        pass
-    #print('Download File: ', dest_path)
-    #Define download link
-    url = row['Web File for Download']
-    #Old file name of the url
-    filename = url.split('/')[-1]
-    #print('Filename: ', filename)
-    ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-    #print('Extract to Dir: ', ext_dir_name)
-    fullpath_filename = os.path.join(dest_dir, filename)
-    #print('Full File Path: ', fullpath_filename)
-    download_url_wget(dest_dir, url)
-    if filename.endswith('.zip'):
-        #print("'{0}' is unzipping...Please be patient!\n".format(filename))
-        shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-        print("Unzipped: {0}.\n".format(fullpath_filename))
-        #delete zip file after extract
-        os.remove(fullpath_filename)
-        #rename file
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    if ((row['Status']=='URL' & row["Activated"]=='Yes')):
+        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+        #print('Download Destination: ', dest_dir)
         try:
-            os.rename(ext_dir_name, dest_path)
-            print("Rename complete")
+            dest_path = os.path.join(dest_dir, row['Folder Rename'])
         except Exception:
             pass
-    else:     
-        try:
-            os.rename(fullpath_filename, dest_path)
-            print("Rename complete")
-        except Exception:
-            pass
-print(df_NCRN_GIS_Data_Sources_URL)
-
-###Select sources where Status is AGOL
-df_NCRN_GIS_Data_Sources_AGOL = df_NCRN_GIS_Data_Sources[(df_NCRN_GIS_Data_Sources["Status"] == 'AGOL') & (df_NCRN_GIS_Data_Sources["Activated"] == 'Yes')]
+        #print('Download File: ', dest_path)
+        if row['Source Type']=='Dataset':
+            url = row['Web File for Download']
+            filename = url.split('/')[-1]
+            #print('Filename: ', filename)
+            ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+            #print('Extract to Dir: ', ext_dir_name)
+            fullpath_filename = os.path.join(dest_dir, filename)
+            #print('Full File Path: ', fullpath_filename)
+            download_url_wget(dest_dir, url)
+            if filename.endswith('.zip'):
+                #print("'{0}' is unzipping...Please be patient!\n".format(filename))
+                shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+                print("Unzipped: {0}.\n".format(fullpath_filename))
+                #delete zip file after extract
+                os.remove(fullpath_filename)
+                try:
+                    os.rename(ext_dir_name, dest_path)
+                except Exception:
+                    print("Rename attempt resulted in an error or no Folder Rename was provided")
+        elif row['Source Type']=='Datasets':
+            def Convert(string):
+                li = list(string.split(", "))
+                return li
+            items_str = row['Items']
+            items_list = Convert(items_str)
+            for item in items_list:
+                url = os.path.join(row['Web File for Download'], item)
+                filename = url.split('/')[-1]
+                #print('Filename: ', filename)
+                ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+                #print('Extract to Dir: ', ext_dir_name)
+                fullpath_filename = os.path.join(dest_dir, filename)
+                #print('Full File Path: ', fullpath_filename)
+                download_url_wget(dest_dir, url)
+                if filename.endswith('.zip'):
+                    #print("'{0}' is unzipping...Please be patient!\n".format(filename))
+                    shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+                    print("Unzipped: {0}.\n".format(fullpath_filename))
+                    #delete zip file after extract
+                    os.remove(fullpath_filename)
 
 ##download AGOL content
-for index, row in df_NCRN_GIS_Data_Sources_AGOL.iterrows():
-    dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-    data_item_id = row['Data Item ID']
-    data_item = gis.content.get(data_item_id)
-    if row['Source Data Type']=='File Geodatabase':       
-        data_item.get_data()
-        filename = data_item.download(dest_dir)
-        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-        fullpath_filename = os.path.join(dest_dir, filename)
-        if filename.endswith('.zip'):
-            #print("'{0}' is unzipping...please be patient!\n".format(filename))
-            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-            print("unzipped: {0}.\n".format(fullpath_filename))
-            os.remove(fullpath_filename)
-    elif row['Source Data Type']=='Multiple (File Geodatabase)':
-        data_item = data_item.export(title = row['Folder Rename'], export_format = "File Geodatabase", wait = True)
-        data_item.get_data()
-        filename = data_item.download(dest_dir)
-        ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-        fullpath_filename = os.path.join(dest_dir, filename)
-        if filename.endswith('.zip'):
-            #print("'{0}' is unzipping...please be patient!\n".format(filename))
-            shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-            print("unzipped: {0}.\n".format(fullpath_filename))
-            os.remove(fullpath_filename)
-print(df_NCRN_GIS_Data_Sources_AGOL)
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    if ((row["Status"] == 'AGOL') & (row["Activated"] == 'Yes')):
+        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+        data_item_id = row['Data Item ID']
+        data_item = gis.content.get(data_item_id)
+        if row['Source Data Type']=='File Geodatabase':       
+            data_item.get_data()
+            filename = data_item.download(dest_dir)
+            ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+            fullpath_filename = os.path.join(dest_dir, filename)
+            if filename.endswith('.zip'):
+                #print("'{0}' is unzipping...please be patient!\n".format(filename))
+                shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+                print("unzipped: {0}.\n".format(fullpath_filename))
+                os.remove(fullpath_filename)
+        elif row['Source Data Type']=='Multiple (File Geodatabase)':
+            data_item = data_item.export(title = row['Folder Rename'], export_format = "File Geodatabase", wait = True)
+            data_item.get_data()
+            filename = data_item.download(dest_dir)
+            ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+            fullpath_filename = os.path.join(dest_dir, filename)
+            if filename.endswith('.zip'):
+                #print("'{0}' is unzipping...please be patient!\n".format(filename))
+                shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+                print("unzipped: {0}.\n".format(fullpath_filename))
+                os.remove(fullpath_filename)
 
 ##Rename geodatabases
 print('Checking for Geodatabases to rename...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #NHDPlus, TIGER
-    if ((row['ID'] == 20) or (row['ID'] == 21) or (row['ID'] == 22)):
-        try:
-            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
-            in_data = row['GDB Name']
-            out_data = row['New GDB Name']
-            data_type = "FileGeodatabase"
+    try:
+        gdb_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New GDB Name'])
+    except Exception:
+        pass
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'])
+        in_data = row['GDB Name']
+        out_data = row['New GDB Name']
+        data_type = "FileGeodatabase"
+        if os.path.exists(gdb_dir):
+            pass
+        else:
             arcpy.management.Rename(in_data, out_data, data_type)
             print('Geodatabase renamed as: ', row['New GDB Name'])
-        except Exception:
-            pass
 
 ## Create geodatabases
 print('Checking for new Geodatabases to create...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #HIFLD/OSM, NWI, USGS, EPA  
-    if  ((row['ID'] == 3) or (row['ID'] == 40) or (row['ID'] == 44) or (row['ID'] == 45)):
-        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        if os.path.exists(dest_path):
-            pass
-        else: 
-            arcpy.CreateFileGDB_management(dest_dir, row['New GDB Name'])
-            print('Created Geodatabase: ', row['New GDB Name'])
-    #NED, STATSGO2        
-    elif ((row['ID'] == 35) or (row['ID'] == 63)):
+    try:    
         dest_dir = os.path.join(__ROOT_DIR, row['New GDB Directory'])
-        dest_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+        dest_path = os.path.join(dest_dir, row['New GDB Name'])
+    except Exception:
+        pass
         if os.path.exists(dest_path):
             pass
         else: 
@@ -277,52 +275,27 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 #Merge feature classes
 print('Checking for feature classes to merge...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #TIGER
-    if row['ID'] == 22:
-        try:
-            dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['Folder Rename'], row['New GDB Name'])
-            fc1 = os.path.join(dest_dir, row['File Name 3'])
-            fc2 = os.path.join(dest_dir, row['File Name 4'])
-            output = os.path.join(dest_dir, row['Feature Class Rename 3'])
-            arcpy.env.workspace = dest_dir
-            arcpy.management.Merge([fc1, fc2], output)
-            print('Merged feature class: ', row['Feature Class Rename 3'])
-        except Exception:
-            pass
-    #OSM
-    elif ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)):
-        try:
-            input_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-            gdb_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
-            fc1 = os.path.join(dest_dir, row['File Name 1'])
-            fc2 = os.path.join(dest_dir, row['File Name 2'])
-            fc3 = os.path.join(dest_dir, row['File Name 3'])
-            fc4 = os.path.join(dest_dir, row['File Name 4'])
-            output = os.path.join(gdb_path, row['Feature Class Rename 1'])
-            arcpy.env.workspace = dest_dir
-            arcpy.management.Merge([fc1, fc2, fc3, fc4], output)
-            print('Merged feature class: ', row['Feature Class Rename 1'])
-        except Exception:
-            pass
-    #NWI
-    elif row['ID'] == 40:
-        try:
-            dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-            fc1 = os.path.join(dest_dir, row['File Name 1'])
-            fc2 = os.path.join(dest_dir, row['File Name 2'])
-            fc3 = os.path.join(dest_dir, row['File Name 3'])
-            fc4 = os.path.join(dest_dir, row['File Name 4'])
-            output = os.path.join(dest_dir, row['New GDB Name'], row['Feature Class Rename 1'])
-            arcpy.env.workspace = dest_dir
-            arcpy.management.Merge([fc1, fc2, fc3, fc4], output)
-            print('Merged feature class: ', row['Feature Class Rename 1'])
-        except Exception:
-            pass
-                
+    #OSM, NWI, STATSGO2
+    if ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 40) or (row['ID'] == 63)):
+        def Convert(string):
+            li = list(string.split(", "))
+            return li
+        file_names_str = row['File Names']
+        file_names_list = Convert(file_names_str)
+        gdb_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
+        fc1 = os.path.join(arcpy.env.workspace, file_names_list[0])
+        fc2 = os.path.join(arcpy.env.workspace, file_names_list[1])
+        fc3 = os.path.join(arcpy.env.workspace, file_names_list[2])
+        fc4 = os.path.join(arcpy.env.workspace, file_names_list[3])
+        output = os.path.join(gdb_path, row['File Renames'])
+        arcpy.management.Merge([fc1, fc2, fc3, fc4], output)
+        print('Merged feature class: ', row['File Renames'])
+              
 ##Merge rasters
 print('Checking for rasters to merge...')
 #for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #NED
+    #3DEP
     #if row['ID'] == 35:
     #    try:
     #        env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
@@ -376,6 +349,10 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         pass
  
 ##Rename feature classes in geodatabases
+
+    file_renames_str = row['File Renames']
+    file_renames_list = Convert(file_names_str)
+
 print('Checking for Feature Classes to rename...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     try:
