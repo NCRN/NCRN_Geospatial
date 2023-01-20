@@ -174,16 +174,6 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                     os.remove(file)
         except Exception:
             pass
-        #Delete files in geodatabase (HIFLD)
-        if row['ID'] == 3:
-            try:
-                dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-                for file_name in os.listdir(dest_path):
-                    file = os.path.join(dest_path, file_name)
-                    if os.path.isfile(file):
-                        os.remove(file)
-            except Exception:
-                pass
         #Delete files (SSURGO and STATSGO2)
         try:
             def Convert(string):
@@ -266,7 +256,8 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 print("Unzipped: {0}.\n".format(fullpath_filename))
                 #delete zip file after extract
                 os.remove(fullpath_filename)
-        elif row['Source Type']=='Datasets':
+    #Contours    
+    elif row['Source Type']=='Datasets':
             def Convert(string):
                 li = list(string.split(", "))
                 return li
@@ -283,7 +274,6 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                     #print("'{0}' is unzipping...Please be patient!\n".format(filename))
                     shutil.unpack_archive(fullpath_filename, dest_dir)
                     print("Unzipped: {0}.\n".format(fullpath_filename))
-                    #delete zip file after extract
                     os.remove(fullpath_filename)
 
 ##download AGOL content
@@ -302,6 +292,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
                 print("unzipped: {0}.\n".format(fullpath_filename))
                 os.remove(fullpath_filename)
+        #HIFLD
         elif row['Source Data Type']=='Multiple (File Geodatabase)':
             data_item = data_item.export(title = data_item_id, export_format = "File Geodatabase", wait = True)
             data_item.get_data()
@@ -335,22 +326,6 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             arcpy.CreateFileGDB_management(dest_dir, row['New GDB Name'])
             print('Created Geodatabase: ', row['New GDB Name'])
 
-#Rename geodatabases
-print('Checking for Geodatabases to rename...')
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #HIFLD
-    if row['ID'] == 3:
-        out_name = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-        in_data = row['Original GDB Name']
-        out_data = row['New GDB Name']
-        data_type = "FileGeodatabase"
-        if os.path.exists(out_name):
-            pass
-        else:
-            arcpy.management.Rename(in_data, out_data, data_type)
-            print('Geodatabase renamed as: ', out_data)
-
 #Merge feature classes
 print('Checking for feature classes to merge...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
@@ -361,15 +336,16 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
-        output_location = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+        dest_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
         arcpy.env.workspace = os.path.join(__ROOT_DIR,  row['New GDB Directory'])
         in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
         in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
         in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
         in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
-        out_data = os.path.join(output_location, row['New File Names'])
+        out_data = os.path.join(dest_path, row['New File Names'])
+        #Delete existing feature classes
         if arcpy.Exists(out_data):
-            arcpy.env.workspace = output_location
+            arcpy.env.workspace = dest_path
             arcpy.management.Delete(out_data)
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
         print('Merged feature class: ', row['New File Names'])
@@ -380,15 +356,15 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
-        output_location = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
         in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
         in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
         in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
         in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
-        out_data = os.path.join(output_location, row['New File Names'])
+        out_data = os.path.join(dest_path, row['New File Names'])
         if arcpy.Exists(out_data):
-            arcpy.env.workspace = output_location
+            arcpy.env.workspace = dest_path
             arcpy.management.Delete(out_data)
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
         print('Merged feature class: ', row['New File Names'])
@@ -399,16 +375,16 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
-        output_location = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
         in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
         in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
         in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
         in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
         in_data5 = os.path.join(arcpy.env.workspace, in_data_list[4])
-        out_data = os.path.join(output_location, row['New File Names'])
+        out_data = os.path.join(dest_path, row['New File Names'])
         if arcpy.Exists(out_data):
-            arcpy.env.workspace = output_location
+            arcpy.env.workspace = dest_path
             arcpy.management.Delete(out_data)
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4, in_data5], out_data)
         print('Merged feature class: ', row['New File Names'])
@@ -426,14 +402,14 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         out_data_str = row['New File Names']
         out_data_list = Convert(out_data_str)
         in_data = (in_data_list[0], in_data_list[1], in_data_list[2], in_data_list[3], in_data_list[4])
-        output_location = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         out_data = out_data_list[0]
-        out_data_path = os.path.join(output_location, out_data)
-        if arcpy.Exists(out_data_path):
-            arcpy.env.workspace = output_location
+        dest_path = os.path.join(dest_dir, out_data)
+        if arcpy.Exists(dest_path):
+            arcpy.env.workspace = dest_dir
             arcpy.management.Delete(out_data)
         env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-        arcpy.management.MosaicToNewRaster(in_data, output_location, out_data,
+        arcpy.management.MosaicToNewRaster(in_data, dest_dir, out_data,
                                             'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
                                             "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
         print('Merged feature class: ', out_data)
@@ -449,7 +425,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         out_data_str = row['New File Names']
         out_data_list = Convert(out_data_str)
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+        dest_path1 = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         in_csv = os.path.join(dest_dir, row['File Names'])
         df = pd.read_csv(in_csv, low_memory=False)
         df["latitude"] = df["LATITUDE83"].astype(float)
@@ -461,13 +437,13 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         #print('Exported CSV')
         in_table = out_csv
         out_data = out_data_list[1]
-        out_data_path = os.path.join(dest_path, out_data)
+        dest_path2 = os.path.join(dest_path1, out_data)
         x_coords = "longitude"
         y_coords = "latitude"
-        if arcpy.Exists(out_data_path):
-            arcpy.env.workspace = dest_path
+        if arcpy.Exists(dest_path2):
+            arcpy.env.workspace = dest_path1
             arcpy.management.Delete(out_data)
-        arcpy.env.workspace = dest_path
+        arcpy.env.workspace = dest_path1
         arcpy.management.XYTableToPoint(in_table, 
                                         out_data, 
                                         x_coords, y_coords, None, 
@@ -486,8 +462,8 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         in_data = data_list[0]
         out_data = data_list[1]
-        out_data_path = os.path.join(env.workspace, out_data)
-        if arcpy.Exists(out_data_path):
+        dest_path = os.path.join(env.workspace, out_data)
+        if arcpy.Exists(dest_path):
             arcpy.management.Delete(out_data)
         outHillShade = Hillshade(in_data, 315, 45, "NO_SHADOWS", 1); outHillShade.save(out_data)
         print('HillShade was successful')
