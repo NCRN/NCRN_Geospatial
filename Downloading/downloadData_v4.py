@@ -149,25 +149,36 @@ __RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.png', '.sid', '.bmp'] # Logica
 # Create a variable to store the full path to the GIS Library sources Excel file
 __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN-GIS-Data-Sources.xlsx'
 
-
-###Download feature service items from ArcGIS Online
-
 #Specify the ArcGIS Online credentials to use.
 #gis = GIS("https://arcgis.com", "Username", "Password")
-#print("Connected.")
+#print('Connecting to AGOL...')
+#DELETE BEFORE COMMITING TO GITHUB
 
+
+#Connect to ArcGIS Pro
 gis = GIS("pro")
 
 ###Read excel into dataframe using Pandas
+print('Reading Data Sources spreadsheet...')
 df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources', usecols = ['ID', 'Status', 'Source Type', 'Activated', 'Source Data Type', 'Web File for Download', 'Items', 'Data Item ID', 'Local Directory', 'Original GDB Name', 'New GDB Directory', 'New GDB Name', 'File Names', 'New File Names'])
 #print(df_NCRN_GIS_Data_Sources)
 
 #Delete existing files before downloading
+print('Deleting existing files before downloading...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if row["Activated"]=='Yes':
         #Delete files in geodatabase
         try:
             dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name'])
+            for file_name in os.listdir(dest_path):
+                file = os.path.join(dest_path, file_name)
+                if os.path.isfile(file):
+                    os.remove(file)
+        except Exception:
+            pass
+        #Delete files in geodatabase (renamed)
+        try:
+            dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
             for file_name in os.listdir(dest_path):
                 file = os.path.join(dest_path, file_name)
                 if os.path.isfile(file):
@@ -212,7 +223,6 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 dest_path = os.path.join(dest_dir, item)
                 for file_name in os.listdir(dest_path):
                     file = os.path.join(dest_path, file_name)
-                    print(file)
                     if os.path.isfile(file):
                         os.remove(file)
                 os.rmdir(dest_path)
@@ -276,7 +286,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                         print("Unzipped: {0}.\n".format(fullpath_filename))
                         os.remove(fullpath_filename)
 
-##download AGOL content
+###Download feature service items from ArcGIS Online
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if ((row["Status"] == 'AGOL') & (row["Activated"] == 'Yes')):
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
@@ -292,7 +302,6 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
                 print("unzipped: {0}.\n".format(fullpath_filename))
                 os.remove(fullpath_filename)
-        #HIFLD
         elif row['Source Data Type']=='Multiple (File Geodatabase)':
             data_item = data_item.export(title = data_item_id, export_format = "File Geodatabase", wait = True)
             data_item.get_data()
@@ -303,6 +312,20 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 shutil.unpack_archive(fullpath_filename, dest_dir)
                 #print("unzipped: {0}.\n".format(fullpath_filename))
                 os.remove(fullpath_filename)
+
+##Rename geodatabases
+print('Checking for Geodatabases to rename...')
+for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+    #HIFLD, NPS_Regional_Boundaries
+        if ((row['ID'] == 3) or (row['ID'] == 68)):
+            dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name'])
+            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
+            in_data = row['Original GDB Name']
+            out_data = row['New GDB Name']
+            data_type = "FileGeodatabase"
+            if os.path.exists(dest_path):
+                arcpy.management.Rename(in_data, out_data, data_type)
+                print('Geodatabase renamed as: ', row['New GDB Name'])
 
 ## Create geodatabases
 print('Checking for new Geodatabases to create...')
@@ -330,7 +353,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 print('Checking for feature classes to merge...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #Open_Street_Map (4 files)
-    if ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29)):
+    if ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)):
         def Convert(string):
             li = list(string.split(", "))
             return li
