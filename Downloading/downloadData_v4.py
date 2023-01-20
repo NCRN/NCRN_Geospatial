@@ -132,7 +132,7 @@ Some of these global variables may not be in use yet.
 __WORKSPACE = r'U:\GIS'
 
 # Set the directory path to the root directory that will be documented
-__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Documents\Test_Downloads'
+__ROOT_DIR = r'C:\Users\goettel\OneDrive - DOI\Geospatial'
 
 # Create a variable to store the file extension for file geodatabases
 __FGDB_EXT = '.gdb'
@@ -256,25 +256,25 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 print("Unzipped: {0}.\n".format(fullpath_filename))
                 #delete zip file after extract
                 os.remove(fullpath_filename)
-    #Contours    
-    elif row['Source Type']=='Datasets':
-            def Convert(string):
-                li = list(string.split(", "))
-                return li
-            items_str = row['Items']
-            items_list = Convert(items_str)
-            for item in items_list:
-                url = os.path.join(row['Web File for Download'], item)
-                filename = url.split('/')[-1]
-                #print('Filename: ', filename)
-                fullpath_filename = os.path.join(dest_dir, filename)
-                #print('Full File Path: ', fullpath_filename)
-                download_url_wget(dest_dir, url)
-                if filename.endswith('.zip'):
-                    #print("'{0}' is unzipping...Please be patient!\n".format(filename))
-                    shutil.unpack_archive(fullpath_filename, dest_dir)
-                    print("Unzipped: {0}.\n".format(fullpath_filename))
-                    os.remove(fullpath_filename)
+        #Contours    
+        elif row['Source Type']=='Datasets':
+                def Convert(string):
+                    li = list(string.split(", "))
+                    return li
+                items_str = row['Items']
+                items_list = Convert(items_str)
+                for item in items_list:
+                    url = os.path.join(row['Web File for Download'], item)
+                    filename = url.split('/')[-1]
+                    #print('Filename: ', filename)
+                    fullpath_filename = os.path.join(dest_dir, filename)
+                    #print('Full File Path: ', fullpath_filename)
+                    download_url_wget(dest_dir, url)
+                    if filename.endswith('.zip'):
+                        #print("'{0}' is unzipping...Please be patient!\n".format(filename))
+                        shutil.unpack_archive(fullpath_filename, dest_dir)
+                        print("Unzipped: {0}.\n".format(fullpath_filename))
+                        os.remove(fullpath_filename)
 
 ##download AGOL content
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
