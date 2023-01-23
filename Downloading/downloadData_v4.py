@@ -216,7 +216,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             def Convert(string):
                 li = list(string.split(", "))
                 return li
-            items_str = row['Original GDB Name']
+            items_str = row['Items']
             items_list = Convert(items_str)
             dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
             for item in items_list:
@@ -313,21 +313,21 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 #print("unzipped: {0}.\n".format(fullpath_filename))
                 os.remove(fullpath_filename)
 
-##Rename geodatabases
-print('Checking for Geodatabases to rename...')
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #HIFLD, NPS_Regional_Boundaries
-        if ((row['ID'] == 3) or (row['ID'] == 68)):
-            dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name'])
-            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-            in_data = row['Original GDB Name']
-            out_data = row['New GDB Name']
-            data_type = "FileGeodatabase"
-            if os.path.exists(dest_path):
-                arcpy.management.Rename(in_data, out_data, data_type)
-                print('Geodatabase renamed as: ', row['New GDB Name'])
+###Rename geodatabases
+#print('Checking for Geodatabases to rename...')
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    #HIFLD, NPS_Regional_Boundaries
+#        if ((row['ID'] == 3) or (row['ID'] == 68)):
+#            dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name'])
+#            arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
+#            in_data = row['Original GDB Name']
+#            out_data = row['New GDB Name']
+#            data_type = "FileGeodatabase"
+#            if os.path.exists(dest_path):
+#                arcpy.management.Rename(in_data, out_data, data_type)
+#                print('Geodatabase renamed as: ', row['New GDB Name'])
 
-## Create geodatabases
+### Create geodatabases
 print('Checking for new Geodatabases to create...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #Open_Street_Map 
@@ -353,45 +353,45 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 print('Checking for feature classes to merge...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     #Open_Street_Map (4 files)
-    if ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)):
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
-        in_data_str = row['File Names']
-        in_data_list = Convert(in_data_str)
-        dest_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
-        arcpy.env.workspace = os.path.join(__ROOT_DIR,  row['New GDB Directory'])
-        in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
-        in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
-        in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
-        in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
-        out_data = os.path.join(dest_path, row['New File Names'])
-        #Delete existing feature classes
-        if arcpy.Exists(out_data):
-            arcpy.env.workspace = dest_path
-            arcpy.management.Delete(out_data)
-        arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
-        print('Merged feature class: ', row['New File Names'])
-    #NWI, STATSGO2 (4 files)
-    if ((row['ID'] == 40) or (row['ID'] == 63)):
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
-        in_data_str = row['File Names']
-        in_data_list = Convert(in_data_str)
-        dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-        in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
-        in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
-        in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
-        in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
-        out_data = os.path.join(dest_path, row['New File Names'])
-        if arcpy.Exists(out_data):
-            arcpy.env.workspace = dest_path
-            arcpy.management.Delete(out_data)
-        arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
-        print('Merged feature class: ', row['New File Names'])
-    #Contours (5 files)
+    #if ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)):
+    #    def Convert(string):
+    #        li = list(string.split(", "))
+    #        return li
+    #    in_data_str = row['File Names']
+    #    in_data_list = Convert(in_data_str)
+    #    dest_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
+    #    arcpy.env.workspace = os.path.join(__ROOT_DIR,  row['New GDB Directory'])
+    #    in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
+    #    in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
+    #    in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
+    #    in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
+    #    out_data = os.path.join(dest_path, row['New File Names'])
+    #    #Delete existing feature classes
+    #    if arcpy.Exists(out_data):
+    #        arcpy.env.workspace = dest_path
+    #        arcpy.management.Delete(out_data)
+    #    arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
+    #    print('Merged feature class: ', row['New File Names'])
+    ##NWI, STATSGO2 (4 files)
+    #if ((row['ID'] == 40) or (row['ID'] == 63)):
+    #    def Convert(string):
+    #        li = list(string.split(", "))
+    #        return li
+    #    in_data_str = row['File Names']
+    #    in_data_list = Convert(in_data_str)
+    #    dest_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+    #    arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
+    #    in_data1 = os.path.join(arcpy.env.workspace, in_data_list[0])
+    #    in_data2 = os.path.join(arcpy.env.workspace, in_data_list[1])
+    #    in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
+    #    in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
+    #    out_data = os.path.join(dest_path, row['New File Names'])
+    #    if arcpy.Exists(out_data):
+    #        arcpy.env.workspace = dest_path
+    #        arcpy.management.Delete(out_data)
+    #    arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
+    #    print('Merged feature class: ', row['New File Names'])
+    #Contours (6 files)
     if row['ID'] == 67:
         def Convert(string):
             li = list(string.split(", "))
@@ -405,68 +405,69 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
         in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
         in_data5 = os.path.join(arcpy.env.workspace, in_data_list[4])
+        in_data6 = os.path.join(arcpy.env.workspace, in_data_list[5])
         out_data = os.path.join(dest_path, row['New File Names'])
         if arcpy.Exists(out_data):
             arcpy.env.workspace = dest_path
             arcpy.management.Delete(out_data)
-        arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4, in_data5], out_data)
+        arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4, in_data5, in_data6], out_data)
         print('Merged feature class: ', row['New File Names'])
               
-##Merge rasters
-print('Checking for rasters to merge...')
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #3DEP (5 files)
-    if row['ID'] == 35:
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
-        in_data_str = row['File Names']
-        in_data_list = Convert(in_data_str)
-        in_data = (in_data_list[0], in_data_list[1], in_data_list[2], in_data_list[3], in_data_list[4])
-        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        out_data = row['New File Names']
-        dest_path = os.path.join(dest_dir, out_data)
-        if arcpy.Exists(dest_path):
-            arcpy.env.workspace = dest_dir
-            arcpy.management.Delete(out_data)
-        env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-        arcpy.management.MosaicToNewRaster(in_data, dest_dir, out_data,
-                                            'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
-                                            "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
-        print('Merged feature class: ', out_data)
+###Merge rasters
+#print('Checking for rasters to merge...')
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    #3DEP (5 files)
+#    if row['ID'] == 35:
+#        def Convert(string):
+#            li = list(string.split(", "))
+#            return li
+#        in_data_str = row['File Names']
+#        in_data_list = Convert(in_data_str)
+#        in_data = (in_data_list[0], in_data_list[1], in_data_list[2], in_data_list[3], in_data_list[4])
+#        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+#        out_data = row['New File Names']
+#        dest_path = os.path.join(dest_dir, out_data)
+#        if arcpy.Exists(dest_path):
+#            arcpy.env.workspace = dest_dir
+#            arcpy.management.Delete(out_data)
+#        env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
+#        arcpy.management.MosaicToNewRaster(in_data, dest_dir, out_data,
+#                                            'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
+#                                            "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
+#        print('Merged feature class: ', out_data)
 
 
-##xy table to point
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if row['Source Data Type'] == 'CSV':
-        print('Running xy table to point...')
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
-        out_data_str = row['New File Names']
-        out_data_list = Convert(out_data_str)
-        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-        dest_path1 = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        in_csv = os.path.join(dest_dir, row['File Names'])
-        df = pd.read_csv(in_csv, low_memory=False)
-        df["latitude"] = df["LATITUDE83"].astype(float)
-        df["longitude"] = df["LONGITUDE83"].astype(float)
-        out_csv = os.path.join(dest_dir, out_data_list[0])
-        if os.path.exists(out_csv):
-            os.remove(out_csv)
-        df.to_csv(out_csv)
-        #print('Exported CSV')
-        in_table = out_csv
-        out_data = out_data_list[1]
-        dest_path2 = os.path.join(dest_path1, out_data)
-        x_coords = "longitude"
-        y_coords = "latitude"
-        if arcpy.Exists(dest_path2):
-            arcpy.env.workspace = dest_path1
-            arcpy.management.Delete(out_data)
-        arcpy.env.workspace = dest_path1
-        arcpy.management.XYTableToPoint(in_table, 
-                                        out_data, 
-                                        x_coords, y_coords, None, 
-                                        'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
-        print('xy table to point was successful')
+###xy table to point
+#for index, row in df_NCRN_GIS_Data_Sources.iterrows():
+#    if row['Source Data Type'] == 'CSV':
+#        print('Running xy table to point...')
+#        def Convert(string):
+#            li = list(string.split(", "))
+#            return li
+#        out_data_str = row['New File Names']
+#        out_data_list = Convert(out_data_str)
+#        dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+#        dest_path1 = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+#        in_csv = os.path.join(dest_dir, row['File Names'])
+#        df = pd.read_csv(in_csv, low_memory=False)
+#        df["latitude"] = df["LATITUDE83"].astype(float)
+#        df["longitude"] = df["LONGITUDE83"].astype(float)
+#        out_csv = os.path.join(dest_dir, out_data_list[0])
+#        if os.path.exists(out_csv):
+#            os.remove(out_csv)
+#        df.to_csv(out_csv)
+#        #print('Exported CSV')
+#        in_table = out_csv
+#        out_data = out_data_list[1]
+#        dest_path2 = os.path.join(dest_path1, out_data)
+#        x_coords = "longitude"
+#        y_coords = "latitude"
+#        if arcpy.Exists(dest_path2):
+#            arcpy.env.workspace = dest_path1
+#            arcpy.management.Delete(out_data)
+#        arcpy.env.workspace = dest_path1
+#        arcpy.management.XYTableToPoint(in_table, 
+#                                        out_data, 
+#                                        x_coords, y_coords, None, 
+#                                        'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
+#        print('xy table to point was successful')
