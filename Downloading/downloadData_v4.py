@@ -422,11 +422,9 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
-        out_data_str = row['New File Names']
-        out_data_list = Convert(out_data_str)
         in_data = (in_data_list[0], in_data_list[1], in_data_list[2], in_data_list[3], in_data_list[4])
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        out_data = out_data_list[0]
+        out_data = row['New File Names']
         dest_path = os.path.join(dest_dir, out_data)
         if arcpy.Exists(dest_path):
             arcpy.env.workspace = dest_dir
@@ -472,21 +470,3 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                                         x_coords, y_coords, None, 
                                         'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
         print('xy table to point was successful')
-
-#Create hillshading layer
-for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if row['ID'] == 35:
-        print('Running HillShade...')
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
-        data_str = row['New File Names']
-        data_list = Convert(data_str)
-        env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
-        in_data = data_list[0]
-        out_data = data_list[1]
-        dest_path = os.path.join(env.workspace, out_data)
-        if arcpy.Exists(dest_path):
-            arcpy.management.Delete(out_data)
-        outHillShade = Hillshade(in_data, 315, 45, "NO_SHADOWS", 1); outHillShade.save(out_data)
-        print('HillShade was successful')
