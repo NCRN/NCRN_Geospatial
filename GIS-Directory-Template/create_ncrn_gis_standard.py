@@ -206,7 +206,6 @@ monloc_fields_list = [
 monlocdata_fields_list = [
                 ['DATAIMLOCID','TEXT','','',25,'DATAIMLOCID','NULLABLE','NON_REQUIRED',''],
                 ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
-                ['LOCATIONTYPE','TEXT','','',50,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
                 ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
                 ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
                 ['DISTANCE','DOUBLE','','','','DISTANCE','NULLABLE','NON_REQUIRED',''],
