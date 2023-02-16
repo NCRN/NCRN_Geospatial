@@ -5,9 +5,9 @@ import sys
 print('### GETTING STARTED ###'.format())
 
 # Currently hardcoded values that may be parameterized if bundling into a tool
-workspace = r'C:\Users\goettel\DOI\NCRN Data Management - GIS\NCRN_GIS_Data_Standard' ## Update this to be the directory where the geodatabase should be created
+workspace = r'C:\Users\goettel\OneDrive - DOI\Documents' ## Update this to be the directory where the geodatabase should be created
 
-in_gdb = r'NCRN_GIS_Standard.gdb' ## Change the name of the geodatabase as needed
+in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Currently putting IMD feature classes inside a feature dataset
 
@@ -37,6 +37,7 @@ domains_list = ['DOM_DATAACCESS_NPS2016',
                 'DOM_REGIONCODE_NPS2016',
                 'DOM_XYACCURACY_NPS2016',
                 'DOM_YES_NO_UNK_NPS2016',
+                'DOM_LOCDATATYPE_IMD2022',
                 'DOM_LOGISTICSTYPE_IMD2022',
                 'DOM_LOCATIONTYPE_IMD2022',
                 'DOM_INDICATORCAT_IMD2022']
@@ -93,6 +94,14 @@ domain_values_list = [[arcpy.env.workspace, 'DOM_DATAACCESS_NPS2016', 'Unrestric
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'Unknown', 'Unknown'],
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'Yes', 'Yes'],
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'No', 'No'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Plot Center', 'Plot Center'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Quad', 'Quad'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Microplot', 'Microplot'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Subplot', 'Subplot'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Transect End', 'Transect End'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Tree', 'Tree'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Transect', 'Transect'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Other', 'Other'],
                         [arcpy.env.workspace, 'DOM_LOGISTICSTYPE_IMD2022', 'Parking Location', 'Parking Location'],
                         [arcpy.env.workspace, 'DOM_LOGISTICSTYPE_IMD2022', 'Warning Location', 'Warning Location'],
                         [arcpy.env.workspace, 'DOM_LOGISTICSTYPE_IMD2022', 'Walking Route', 'Walking Route'],
@@ -206,6 +215,7 @@ monloc_fields_list = [
 monlocdata_fields_list = [
                 ['DATAIMLOCID','TEXT','','',25,'DATAIMLOCID','NULLABLE','NON_REQUIRED',''],
                 ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
+                ['LOCDATATYPE','TEXT','','',50,'LOCDATATYPE','NULLABLE','NON_REQUIRED',''],
                 ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
                 ['Y','DOUBLE','','','','Y','NULLABLE','NON_REQUIRED',''],
                 ['DISTANCE','DOUBLE','','','','DISTANCE','NULLABLE','NON_REQUIRED',''],
@@ -278,18 +288,19 @@ for fc in arcpy.ListFeatureClasses():
             print('Done creating field [{0}] in [{1}]'.format(fld[0], fc))        
 
 # Domain fields
-domain_fields_dict = {'DATAACCESS':'DOM_DATAACCESS_NPS2016', 
-                      'ISEXTANT':'DOM_ISEXTANT_NPS2016',
-                      'LINETYPE':'DOM_LINETYPE_NPS2016',
-                      'OBSERVABLE':'DOM_YES_NO_UNK_NPS2016',
-                      'POINTTYPE':'DOM_POINTTYPE_NPS2016',
-                      'POLYGONTYPE':'DOM_POLYGONTYPE_NPS2016',
-                      'PUBLICDISPLAY':'DOM_PUBLICDISPLAY_NPS2016',
-                      'REGIONCODE':'DOM_REGIONCODE_NPS2016',
-                      'XYACCURACY':'DOM_XYACCURACY_NPS2016',
-                      'INDICATORCAT':'DOM_INDICATORCAT_IMD2022',
-                      'LOCATIONTYPE':'DOM_LOCATIONTYPE_IMD2022',
-                      'LOGISTICSTYPE':'DOM_LOGISTICSTYPE_IMD2022'
+domain_fields_dict = {'DATAACCESS': 'DOM_DATAACCESS_NPS2016', 
+                      'ISEXTANT': 'DOM_ISEXTANT_NPS2016',
+                      'LINETYPE': 'DOM_LINETYPE_NPS2016',
+                      'OBSERVABLE': 'DOM_YES_NO_UNK_NPS2016',
+                      'POINTTYPE': 'DOM_POINTTYPE_NPS2016',
+                      'POLYGONTYPE': 'DOM_POLYGONTYPE_NPS2016',
+                      'PUBLICDISPLAY': 'DOM_PUBLICDISPLAY_NPS2016',
+                      'REGIONCODE': 'DOM_REGIONCODE_NPS2016',
+                      'XYACCURACY': 'DOM_XYACCURACY_NPS2016',
+                      'INDICATORCAT': 'DOM_INDICATORCAT_IMD2022',
+                      'LOCATIONTYPE': 'DOM_LOCATIONTYPE_IMD2022',
+                      'LOCDATATYPE': 'DOM_LOCDATATYPE_IMD2022',
+                      'LOGISTICSTYPE': 'DOM_LOGISTICSTYPE_IMD2022'
 }
 
 #Add domain constraints to appropriate fields
