@@ -2,7 +2,7 @@ import arcpy
 import os
 import scandir
 
-workspace = r'C:\_GIS'
+workspace = r'C:\Users\dgjones\DOI\NCRN Data Management - Documents\Geospatial\GIS\Geodata'
 #workspace = r'U:\GIS
 
 fgdb_ext = '.gdb'
@@ -33,6 +33,7 @@ import glob
 def get_files_glob(base_dir, ext):
     return glob.iglob(rf"{base_dir}\**\*{ext}", recursive=True)
 
-shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(workspace, shp_ext)]
+#shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(workspace, shp_ext)]
+
 for f in get_files_glob(workspace, fgdb_ext):
     print(os.path.join(os.path.dirname(f), os.path.basename(f)))

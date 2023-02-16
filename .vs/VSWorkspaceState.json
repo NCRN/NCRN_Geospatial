@@ -3,8 +3,9 @@
     "",
     "\\Downloading",
     "\\GIS-Directory-Template",
+    "\\GIS-Library",
     "\\Summarize-Watersheds"
   ],
-  "SelectedNode": "\\Downloading\\downloadData_v2.py",
+  "SelectedNode": "\\GIS-Library\\document_gis_directory.py",
   "PreviewInSolutionExplorer": false
 }
