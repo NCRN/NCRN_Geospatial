@@ -39,6 +39,7 @@ import pandas as pd
 from openpyxl import load_workbook
 import os
 import arcpy
+import pathlib
 
 """
 Set various global variables. Some of these could be parameterized to be used as an 
@@ -47,6 +48,7 @@ ArcGIS Toolbox script and/or command line use.
 # Set the directory path to the root directory that will be documented
 #_WORKSPACE = r'C:\_GIS' # Logical variable to parameterize for toolbox and/or command line
 _WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata'
+_WORKSPACE_PREFIX = r'C:\Users\goettel\DOI'
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'
@@ -191,66 +193,66 @@ def get_folder_size(path='.'):
 # THIS IS KEEP -> USED LIST COMPREHENSION TO GET THE FULL LIST OF SHAPEFILES IN THE ROOT DIRECTORY
 shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _SHP_EXT)]
 
-for rast_ext in _RAST_EXT:
-    glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, rast_ext)]
-    if len(glob_list):
-        rast_list.append(glob_list)
+#for rast_ext in _RAST_EXT:
+#    glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, rast_ext)]
+#    if len(glob_list):
+#        rast_list.append(glob_list)
 
-file_list = fgdb_list + shp_list + rast_list
+#file_list = fgdb_list + shp_list + rast_list
 
-def desc_spatial_data_file(file_list):
-    master_list = []
-    counter = 0
-    for file in file_list:
-        if _FGDB_EXT in file:
-            print('Starting processing for:{0}'.format(file))
-            arcpy.env.workspace = file           
-            datasets = arcpy.ListDatasets(feature_type='feature')
-            print('Finished getting dataset list...')
-            datasets = [''] + datasets if datasets is not None else []
-            for ds in datasets:
-                print('Looping over feature classes...')
-                for fc in arcpy.ListFeatureClasses(feature_dataset=ds):
-                    print('Processing a feature class...')
-                    full_file = os.path.join(arcpy.env.workspace, ds, fc)
-                    try:
-                        desc = arcpy.Describe(fc)
-                        try:
-                            spatial_ref = arcpy.Describe(fc).SpatialReference
-                            srs_name = spatial_ref.Name
-                        except:
-                            srs_name = 'Unknown'
-                            pass
-                        print([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
-                    except:
-                        print([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, 'FC does not exist'])
-                        pass
-                    #master_list.append([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
-                    #counter = counter + 1
-                    #print(counter)
-        elif _SHP_EXT in file:
-            ext = _SHP_EXT.strip('.')
-            desc = arcpy.Describe(file)                
-            try:
-                spatial_ref = arcpy.Describe(file).SpatialReference
-                srs_name = spatial_ref.Name
-            except:
-                srs_name = 'Unknown'
-                pass
-            print([file, os.path.dirname(file), 'NA', ext, desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
-        #elif os.path.splitext(file)[1] in _RAST_EXT:
-        elif _RAST_EXT in file:
-            ext = os.path.splitext(file)[1]
-            desc = arcpy.Describe(file)
-            try:
-                spatial_ref = arcpy.Describe(file).SpatialReference
-                srs_name = spatial_ref.Name
-            except:
-                srs_name = 'Unknown'
-                pass  
-            print([file, os.path.dirname(file), 'NA', 'NA', ext, os.path.basename(file), 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount])
-            #master_list.append([file, os.path.dirname(file), 'NA', 'NA', ext, file_name, 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount])
-    return master_list
+#def desc_spatial_data_file(file_list):
+#    master_list = []
+#    counter = 0
+#    for file in file_list:
+#        if _FGDB_EXT in file:
+#            print('Starting processing for:{0}'.format(file))
+#            arcpy.env.workspace = file           
+#            datasets = arcpy.ListDatasets(feature_type='feature')
+#            print('Finished getting dataset list...')
+#            datasets = [''] + datasets if datasets is not None else []
+#            for ds in datasets:
+#                print('Looping over feature classes...')
+#                for fc in arcpy.ListFeatureClasses(feature_dataset=ds):
+#                    print('Processing a feature class...')
+#                    full_file = os.path.join(arcpy.env.workspace, ds, fc)
+#                    try:
+#                        desc = arcpy.Describe(fc)
+#                        try:
+#                            spatial_ref = arcpy.Describe(fc).SpatialReference
+#                            srs_name = spatial_ref.Name
+#                        except:
+#                            srs_name = 'Unknown'
+#                            pass
+#                        print([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
+#                    except:
+#                        print([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, 'FC does not exist'])
+#                        pass
+#                    #master_list.append([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
+#                    #counter = counter + 1
+#                    #print(counter)
+#        elif _SHP_EXT in file:
+#            ext = _SHP_EXT.strip('.')
+#            desc = arcpy.Describe(file)                
+#            try:
+#                spatial_ref = arcpy.Describe(file).SpatialReference
+#                srs_name = spatial_ref.Name
+#            except:
+#                srs_name = 'Unknown'
+#                pass
+#            print([file, os.path.dirname(file), 'NA', ext, desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
+#        #elif os.path.splitext(file)[1] in _RAST_EXT:
+#        elif _RAST_EXT in file:
+#            ext = os.path.splitext(file)[1]
+#            desc = arcpy.Describe(file)
+#            try:
+#                spatial_ref = arcpy.Describe(file).SpatialReference
+#                srs_name = spatial_ref.Name
+#            except:
+#                srs_name = 'Unknown'
+#                pass  
+#            print([file, os.path.dirname(file), 'NA', 'NA', ext, os.path.basename(file), 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount])
+#            #master_list.append([file, os.path.dirname(file), 'NA', 'NA', ext, file_name, 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount])
+#    return master_list
 
 # IGNORE THIS -> NOT WHAT WAS USED TO GET THE LIST OF GDBs
 #for root, dirs, files in scandir.walk(_WORKSPACE):
@@ -389,16 +391,30 @@ def desc_spatial_data_file(file_list):
             #pass
 
 #############################ACTIVE CODE#############################
+
+fgdb_path_list = []
+fgdb_name_list = []
+fgdb_filesize_list = []
+#fgdb_featuredatasetcount_list = []
+fgdb_featureclasscount_list = []
+fgdb_tablecount_list = []
+fgdb_featureclassname_list = []
+full_name_list = []
+location_list = []
+location_list_edited = []
+container_list = []
+ext_list = []
+name_list = []
+filetype_list = []
+
 #Create list of FGDB paths
 for root, dirs, files in scandir.walk(_WORKSPACE):
     for dir in dirs:
         if str(dir).endswith(_FGDB_EXT):
             fgdb_list.append(os.path.join(root, dir))
-
-fgdb_name_list = []
-fgdb_filesize_list = []
-fgdb_featureclasscount_list = []
-fgdb_featureclassnames_list = []
+for gdb in fgdb_list:
+    path = gdb.removeprefix(r"C:\Users\goettel\DOI")
+    fgdb_path_list.append(path)
 
 ##Create list of FGDB filenames 
 for gdb in fgdb_list:
@@ -410,7 +426,19 @@ for gdb in fgdb_list:
     filesize = get_size_format(get_folder_size(gdb))
     fgdb_filesize_list.append(filesize)
 
-#Create list of FGDB feature classes count
+#Create list of FGDB feature dataset count. DOESNT WORK
+#for gdb in fgdb_list:
+#    workspace = gdb
+#    feature_datasets = []
+#    for dirpath, dirnames, filenames in arcpy.da.Walk(workspace,
+#                                                  datatype="FeatureDataset",
+#                                                  type="Any"):
+#        for filename in filenames:
+#            feature_datasets.append(os.path.join(dirpath, filename))
+#    featuredatasetcount = len(feature_datasets)
+#    fgdb_featuredatasetcount_list.append(featuredatasetcount)
+
+#Create list of FGDB feature class count
 for gdb in fgdb_list:
     workspace = gdb
     feature_classes = []
@@ -422,6 +450,18 @@ for gdb in fgdb_list:
     featureclasscount = len(feature_classes)
     fgdb_featureclasscount_list.append(featureclasscount)
 
+#Create list of FGDB table count
+for gdb in fgdb_list:
+    workspace = gdb
+    tables = []
+    for dirpath, dirnames, filenames in arcpy.da.Walk(workspace,
+                                                  datatype="Table",
+                                                  type="Any"):
+        for filename in filenames:
+            tables.append(os.path.join(dirpath, filename))
+    tablecount = len(tables)
+    fgdb_tablecount_list.append(tablecount)
+
 #Create list of FGDB feature class names
 for gdb in fgdb_list:
     arcpy.env.workspace = gdb
@@ -431,11 +471,81 @@ for gdb in fgdb_list:
         for fc in arcpy.ListFeatureClasses(feature_dataset=ds):
             path = os.path.join(arcpy.env.workspace, ds, fc)
             featureclassnames = path
-            fgdb_featureclassnames_list.append(featureclassnames)
+            fgdb_featureclassname_list.append(featureclassnames)
 
-#Create list of feature class, shapefile, and raster names
-fullname_list = fgdb_featureclassnames_list + shp_list + rast_list
-print(fullname_list)
+#Create list of raster names
+glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _RAST_EXT)]
+for file in glob_list:
+    if file.endswith('.tif'):
+        rast_list.append(file)
+    elif file.endswith('.tiff'):
+        rast_list.append(file)
+    elif file.endswith('.jpg'):
+        rast_list.append(file)
+    elif file.endswith('.jpeg'):
+        rast_list.append(file)
+    elif file.endswith('.png'):
+        rast_list.append(file)
+    elif file.endswith('.sid'):
+        rast_list.append(file)
+    elif file.endswith('.bmp'):
+        rast_list.append(file)
+
+#Create list of Full Names
+file_list = fgdb_featureclassname_list + shp_list + rast_list
+for file in file_list:
+    path = file.removeprefix(_WORKSPACE_PREFIX)
+    full_name_list.append(path)
+
+##Create list of Full Name Locations
+for file in file_list:
+    location = os.path.dirname(file)
+    location_list.append(location)
+
+#Create list of Containers
+for location in location_list:
+    if location.endswith("gdb"):
+        container = os.path.basename(location).split('/')[-1]
+        container_list.append(container)
+    else: 
+        container = "NA"
+        container_list.append(container)
+
+#Edit list of Locations to remove gdbs
+for location in location_list:
+    if location.endswith("gdb"):
+        location = os.path.dirname(location)
+    path = location.removeprefix(_WORKSPACE_PREFIX)
+    location_list_edited.append(path)
+
+#Create list of extension formats
+for file in file_list:
+    ext = pathlib.Path(file).suffix
+    ext_list.append(ext)
+    for ext in range(len(ext_list)):
+        if ext_list[ext] == '':
+            ext_list[ext] = "NA"
+
+#Create list of names
+for file in file_list:
+    filename = os.path.basename(file).split('/')[-1]
+    name_list.append(filename)  
+
+#Create list of file types
+for location in location_list:
+    if location.endswith("gdb"):
+        filetype = "FeatureClass"
+        filetype_list.append(filetype)
+for file in file_list:
+    if file.endswith("shp"):
+        filetype = "ShapeFile"
+        filetype_list.append(filetype)    
+    elif file.endswith("tif"):
+        filetype = "None"
+        filetype_list.append(filetype)
+    elif file.endswith("jpg"):
+        filetype = "JPEG"
+        filetype_list.append(filetype)
 
 #Set path to xlsx workbook and worksheet
 wb = load_workbook(r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx')
@@ -443,34 +553,71 @@ ws1 = wb['FGDBs']
 ws2 = wb['Main']
 
 ##Write FGDB Path to xlsx
-#fgdb_df = pd.DataFrame({'FGDB Path': fgdb_list})
-#for index, row in fgdb_df.iterrows():
-#    cell = 'A%d'  % (index + 2)
-#    ws1[cell] = row[0]
+fgdb_df = pd.DataFrame({'FGDB Path': fgdb_path_list})
+for index, row in fgdb_df.iterrows():
+    cell = 'A%d'  % (index + 2)
+    ws1[cell] = row[0]
 
 ##Write FGDB Name to xlsx
-#fgdb_name_df = pd.DataFrame({'FGDB Name': fgdb_name_list})
-#for index, row in fgdb_name_df.iterrows():
-#    cell = 'B%d'  % (index + 2)
-#    ws1[cell] = row[0]
+fgdb_name_df = pd.DataFrame({'FGDB Name': fgdb_name_list})
+for index, row in fgdb_name_df.iterrows():
+    cell = 'B%d'  % (index + 2)
+    ws1[cell] = row[0]
 
 ##Write File Size to xlsx
-#fgdb_filesize_df = pd.DataFrame({'File Size': fgdb_filesize_list})
-#for index, row in fgdb_filesize_df.iterrows():
-#    cell = 'C%d'  % (index + 2)
-#    ws1[cell] = row[0]
+fgdb_filesize_df = pd.DataFrame({'File Size': fgdb_filesize_list})
+for index, row in fgdb_filesize_df.iterrows():
+    cell = 'C%d'  % (index + 2)
+    ws1[cell] = row[0]
 
 ##Write Feature Class Count to xlsx
-#fgdb_featureclasscount_df = pd.DataFrame({'Feature Class Count': fgdb_featureclasscount_list})
-#for index, row in fgdb_featureclasscount_df.iterrows():
-#    cell = 'E%d'  % (index + 2)
-#    ws1[cell] = row[0]
+fgdb_featureclasscount_df = pd.DataFrame({'Feature Class Count': fgdb_featureclasscount_list})
+for index, row in fgdb_featureclasscount_df.iterrows():
+    cell = 'E%d'  % (index + 2)
+    ws1[cell] = row[0]
 
-##Write feature class, shapefile, and raster names to xlsx
-fullname_df = pd.DataFrame({'Full Name': fullname_list})
+##Write Table Count to xlsx
+fgdb_tablecount_df = pd.DataFrame({'Table Count': fgdb_tablecount_list})
+for index, row in fgdb_tablecount_df.iterrows():
+    cell = 'F%d'  % (index + 2)
+    ws1[cell] = row[0]
+
+##Write Full Name to xlsx
+fullname_df = pd.DataFrame({'Full Name': full_name_list})
 for index, row in fullname_df.iterrows():
     cell = 'A%d'  % (index + 2)
     ws2[cell] = row[0]
 
+##Write Full Name Location to xlsx
+location_df = pd.DataFrame({'Location': location_list_edited})
+for index, row in location_df.iterrows():
+    cell = 'B%d'  % (index + 2)
+    ws2[cell] = row[0]
+
+#Write Container to xlsx
+container_df = pd.DataFrame({'Container': container_list})
+for index, row in container_df.iterrows():
+    cell = 'C%d'  % (index + 2)
+    ws2[cell] = row[0]
+
+##Write Extension to xlsx
+ext_df = pd.DataFrame({'Extension/Format': ext_list})
+for index, row in ext_df.iterrows():
+    cell = 'E%d'  % (index + 2)
+    ws2[cell] = row[0]
+
+##Write Name to xlsx
+name_df = pd.DataFrame({'Name': name_list})
+for index, row in name_df.iterrows():
+    cell = 'F%d'  % (index + 2)
+    ws2[cell] = row[0]
+
+###Write File Type to xlsx
+filetype_df = pd.DataFrame({'File Type / Compression': filetype_list})
+for index, row in filetype_df.iterrows():
+    cell = 'H%d'  % (index + 2)
+    ws2[cell] = row[0]
+
 #save xlsx changes
 wb.save(r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx')
+print("write successful!")
