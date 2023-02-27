@@ -94,7 +94,7 @@ domain_values_list = [[arcpy.env.workspace, 'DOM_DATAACCESS_NPS2016', 'Unrestric
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'Unknown', 'Unknown'],
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'Yes', 'Yes'],
                         [arcpy.env.workspace, 'DOM_YES_NO_UNK_NPS2016', 'No', 'No'],
-                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Plot Center', 'Plot Center'],
+                        [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Plot Boundary', 'Plot Boundary'],
                         [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Quad', 'Quad'],
                         [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Microplot', 'Microplot'],
                         [arcpy.env.workspace, 'DOM_LOCDATATYPE_IMD2022', 'Subplot', 'Subplot'],
