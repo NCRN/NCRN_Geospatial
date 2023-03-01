@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\Downloading",
-    "\\GIS-Directory-Template"
+    "\\GIS-Directory-Template",
+    "\\GIS-Library"
   ],
-  "SelectedNode": "\\GIS-Directory-Template\\create_ncrn_gis_standard.py",
+  "SelectedNode": "\\Summarize-Watersheds",
   "PreviewInSolutionExplorer": false
 }
