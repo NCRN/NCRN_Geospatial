@@ -5,7 +5,7 @@ import sys
 print('### GETTING STARTED ###'.format())
 
 # Currently hardcoded values that may be parameterized if bundling into a tool
-workspace = r'C:\Users\goettel\OneDrive - DOI\Documents' ## Update this to be the directory where the geodatabase should be created
+workspace = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created
 
 in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
 
@@ -177,8 +177,10 @@ monloc_fields_list = [
                         ['REGIONCODE','TEXT','','',4,'REGIONCODE','NULLABLE','NON_REQUIRED',''],
                         ['GROUPCODE','TEXT','','',10,'GROUPCODE','NULLABLE','NON_REQUIRED',''],
                         ['UNITCODE','TEXT','','',10,'UNITCODE','NULLABLE','NON_REQUIRED',''],
+                        ['SUBUNITCODE','TEXT','','',10,'SUBUNITCODE','NULLABLE','NON_REQUIRED',''],
                         ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
                         ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
+                        ['SUBUNITNAME','TEXT','','',254,'SUBUNITNAME','NULLABLE','NON_REQUIRED',''],
                         ['SITENAME','TEXT','','',254,'SITENAME','NULLABLE','NON_REQUIRED',''],
                         ['LOCATIONTYPE','TEXT','','',25,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
                         ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
