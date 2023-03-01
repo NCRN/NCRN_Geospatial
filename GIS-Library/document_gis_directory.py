@@ -582,10 +582,8 @@ for file in file_list:
             if (geometrytype == "Polygon") or (geometrytype == "Polyline") or (geometrytype == "Point") or (geometrytype == "Multipoint"):
                 datatype = "Vector"
                 datatype_list.append(datatype)
-            else: 
-                datatype_list.append("FGDB Raster")
         except:
-            datatype_list.append("Unknown")
+            datatype_list.append("FGDB Raster")
     elif _SHP_EXT in file:
         datatype_list.append("Vector")
     elif os.path.splitext(file)[1] in _RAST_EXT:
@@ -620,7 +618,7 @@ for file in file_list:
             geometrytype = desc.shapeType
             geometrytype_list.append(geometrytype)
         except:
-            geometrytype_list.append("Unknown")
+            geometrytype_list.append("Raster")
     elif _SHP_EXT in file:
         desc = arcpy.Describe(file)
         geometrytype = desc.shapeType
