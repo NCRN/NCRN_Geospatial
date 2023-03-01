@@ -4,11 +4,11 @@
 """
 Document a GIS directory.
 --------------------------------------------------------------------------------
+
 References:
 https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
 """
 
-'''
 What we are trying to do with this script...
 OVERARCHING GOAL: Automate the documentation of GIS datasets in a root directory and write key information to an Excel file
 We are trying to right to an Excel that is similar to this: https://doimspp.sharepoint.com/sites/NCRNDataManagement/Shared%20Documents/Geospatial/NCRN_GIS_Drive_Contents.xlsx
@@ -19,7 +19,11 @@ Later merged these three lists and looped over the big list passing each item to
   a) Write those to a tab on the Excel Workbook called 'FGDBs'
   Phase 2: Later we will write some code to count the feature datasets and feature classes and find the file size of the FGDBs
 2) Refactor code written below that looks at FGDBs and other GIS datasets to document their properties
-'''
+
+References:
+https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
+
+"""
 
 #__author__ = "David Jones"
 #__copyright__ = "None"
@@ -44,6 +48,7 @@ import pathlib
 import pandas
 import time
 
+
 """
 Set various global variables. Some of these could be parameterized to be used as an 
 ArcGIS Toolbox script and/or command line use.
@@ -52,6 +57,7 @@ ArcGIS Toolbox script and/or command line use.
 #_WORKSPACE = r'C:\_GIS' # Logical variable to parameterize for toolbox and/or command line
 _WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata'
 _WORKSPACE_PREFIX = r'C:\Users\goettel\DOI'
+#_WORKSPACE = r'C:\Users\dgjones\DOI\NCRN Data Management - Documents\GIS'
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'
@@ -75,10 +81,12 @@ rast_list = []
 
 def get_files_glob(base_dir, ext):
     """Gets a glob of file paths that .
+
     Args:
         in_file: A full file path string of file to read.
     Returns:
         A list of full path names of MS Access files in directory.
+
     Raises:
         TODO: IOError: An error occurred accessing the smalltable.
     """    
@@ -272,6 +280,95 @@ shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_f
 
 #for gdb in fgdb_list:
 #    print(gdb)
+=======
+#def get_folder_size(path='.'):
+    #total = 0
+    #for entry in os.scandir(path):
+        #if entry.is_file():
+            #total += entry.stat().st_size
+        #elif entry.is_dir():
+            #total += get_folder_size(entry.path)
+    #return total/1024/1024 # MB
+
+def get_gdbs_list(rootdir):
+    gdbs_list = []
+    for it in os.scandir(rootdir):
+        if it.is_dir() and _FGDB_EXT in str(it.path):
+            gdbs_list.append(it.path)
+            #listdirs(it)
+        elif it.is_dir():
+            get_gdbs_list(it)
+
+def desc_spatial_data_file(file_list):
+    master_list = []
+    counter = 0
+    for file in file_list:
+        if _FGDB_EXT in file:
+            #print('Starting processing for:{0}'.format(file))
+            arcpy.env.workspace = file           
+            datasets = arcpy.ListDatasets(feature_type='feature')
+            #print('Finished getting dataset list...')
+            datasets = [''] + datasets if datasets is not None else []
+            
+            for ds in datasets:
+                #print('Looping over feature classes...')
+                for fc in arcpy.ListFeatureClasses(feature_dataset=ds):
+                    #print('Processing a feature class...')
+                    full_file = os.path.join(arcpy.env.workspace, ds, fc)
+                    try:
+                        desc = arcpy.Describe(fc)
+                        try:
+                            spatial_ref = arcpy.Describe(fc).SpatialReference
+                            srs_name = spatial_ref.Name
+                        except:
+                            srs_name = 'Unknown'
+                            pass
+                        print([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
+                    except:
+                        print([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, 'FC does not exist'])
+                        pass
+                    #master_list.append([full_file, os.path.dirname(file), ds, 'NA', desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
+                    #counter = counter + 1
+                    #print(counter)
+        elif _SHP_EXT in file:
+            ext = _SHP_EXT.strip('.')
+            desc = arcpy.Describe(file)                
+            try:
+                spatial_ref = arcpy.Describe(file).SpatialReference
+                srs_name = spatial_ref.Name
+            except:
+                srs_name = 'Unknown'
+                pass
+            print([file, os.path.dirname(file), 'NA', ext, desc.baseName, desc.dataType, desc.shapeType, srs_name, ''])
+        elif os.path.splitext(file)[1] in _RAST_EXT:
+            ext = os.path.splitext(file)[1]
+            desc = arcpy.Describe(file)
+            try:
+                spatial_ref = arcpy.Describe(file).SpatialReference
+                srs_name = spatial_ref.Name
+            except:
+                srs_name = 'Unknown'
+                pass  
+            print([file, os.path.dirname(file), 'NA', 'NA', ext, os.path.basename(file), 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount])
+            #master_list.append([file, os.path.dirname(file), 'NA', 'NA', ext, file_name, 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount])
+
+    return master_list
+
+for root, dirs, files in scandir.walk(_WORKSPACE):
+    for dir in dirs:
+        if str(dir).endswith(_FGDB_EXT):
+            fgdb_list.append(os.path.join(root, dir))
+    #for file in files:
+    #    #print(file)
+    ##append the file name to the list
+    #    if file.endswith(_SHP_EXT):
+    #        shp_list.append(os.path.join(root, file))
+    #    elif file.split('.')[-1] in _RAST_EXT:
+    #        rast_list.append(os.path.join(root, file))
+
+for gdb in fgdb_list:
+    print(gdb)
+#file_list = fgdb_list + shp_list + rast_list
 
 #for files in scandir.walk(workspace):
     #if files.path.endswith(limited_exts):
@@ -288,9 +385,22 @@ shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_f
 
 #print('Total # Files: {0}\nTotal # Folders: {1}\nTotal Size: {2}'.format(dir_stats[1], dir_stats[2], get_size_format(dir_stats[0])))
 
+
 #fgdbs_giant_list = [original big ass list of fgdb files]
 
 ##fgdbs_smaller_list = [r'U:\GIS\WOTR\WOTR_NRCA_Basedata.gdb', r'U:\GIS\WOTR\WOTR_ParkAtlas.gdb']
+
+#fgdbs_giant_list = []
+
+##fgdbs_smaller_list = [r'U:\GIS\WOTR\WOTR_NRCA_Basedata.gdb',
+##r'U:\GIS\WOTR\WOTR_ParkAtlas.gdb']
+
+##shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _SHP_EXT)]
+
+##for rast_ext in _RAST_EXT:
+#    #glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, rast_ext)]
+#    #if len(glob_list):
+#        #rast_list.append(glob_list)
 
 ##import numpy as np
 
@@ -312,7 +422,7 @@ shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_f
 
 #exclude_fgdbs = set([big ass list of gdbs with full file path])
 
-#exclude_folders = [giant list of folders to ignore]
+#exclude_folders = []
 
 #exclude = fgdbs_giant_list + exclude_folders
 
@@ -802,5 +912,3 @@ for index, row in modifieddate_df.iterrows():
 #save xlsx changes
 wb.save(r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx')
 print("write successful!")
-    
-
