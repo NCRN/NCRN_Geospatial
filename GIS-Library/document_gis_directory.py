@@ -23,7 +23,8 @@ Later merged these three lists and looped over the big list passing each item to
 References:
 https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
 
-"""
+'''
+
 
 #__author__ = "David Jones"
 #__copyright__ = "None"
@@ -55,9 +56,10 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Set the directory path to the root directory that will be documented
 #_WORKSPACE = r'C:\_GIS' # Logical variable to parameterize for toolbox and/or command line
-_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata'
-_WORKSPACE_PREFIX = r'C:\Users\goettel\DOI'
+_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS'
 #_WORKSPACE = r'C:\Users\dgjones\DOI\NCRN Data Management - Documents\GIS'
+_WORKSPACE_PREFIX = r'C:\Users\goettel\DOI'
+_WORKSPACE_PREFIX = r'C:\Users\dgjones\DOI'
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'
