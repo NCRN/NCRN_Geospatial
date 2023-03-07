@@ -213,7 +213,7 @@ def desc_spatial_data_file(file_list):
                         size_mb = 'Unknown'
                     else:
                         size_mb = get_file_size(full_file, 'mb')
-                    row_list = [name, os.path.dirname(file), container, ds, '', desc.baseName, desc.dataType, '', desc.shapeType, srs_name, '', size_mb]
+                    row_list = [name, os.path.dirname(file), container, ds, 'NA', desc.baseName, desc.dataType, 'FeatureClass', desc.shapeType, srs_name, 'NA', size_mb]
                     main_master_df.loc[len(main_master_df)] = row_list
             rasters = arcpy.ListRasters("*", "GRID")
             if len(rasters) != 0:
@@ -231,7 +231,7 @@ def desc_spatial_data_file(file_list):
                         size_mb = 'Unknown'
                     else:
                         size_mb = get_file_size(full_file, 'mb')
-                    row_list = [name, os.path.dirname(file), container, ds, 'Grid', desc.baseName, 'FGDB Raster', desc.compressionType,'Raster', srs_name, desc.bandCount, size_mb]
+                    row_list = [name, os.path.dirname(file), container, ds, 'NA', desc.baseName, desc.dataType, desc.compressionType,'Raster', srs_name, desc.bandCount, size_mb]
                     main_master_df.loc[len(main_master_df)] = row_list
         elif _SHP_EXT in file:
             name = file.removeprefix(_WORKSPACE_PREFIX)
@@ -247,7 +247,7 @@ def desc_spatial_data_file(file_list):
                 size_mb = 'Unknown'
             else:
                 size_mb = get_file_size(file, 'mb')
-            row_list = [file, os.path.dirname(file), '', '', ext, desc.baseName, desc.dataType, '', desc.shapeType, srs_name, '', size_mb]
+            row_list = [file, os.path.dirname(file), '', '', ext, desc.baseName, desc.dataType, 'ShapeFile', desc.shapeType, srs_name, 'NA', size_mb]
             main_master_df.loc[len(main_master_df)] = row_list
         elif os.path.splitext(file)[1] in _RAST_EXT:
             name = os.path.splitext(file)[1].removeprefix(_WORKSPACE_PREFIX)
