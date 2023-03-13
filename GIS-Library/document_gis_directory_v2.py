@@ -4,6 +4,7 @@
 """
 Document a GIS directory.
 --------------------------------------------------------------------------------
+TODO: Add more of a complete description
 
 References:
 https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
@@ -12,7 +13,7 @@ https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
 #__copyright__ = "None"
 #__credits__ = [""]
 #__license__ = "GPL"
-#__version__ = "1.0.1"
+#__version__ = "1.0.2"
 #__maintainer__ = "David Jones"
 #__email__ = "david_jones@nps.gov"
 #__status__ = "Staging"
@@ -27,17 +28,18 @@ import scandir
 import pandas as pd
 from openpyxl import load_workbook
 
-#Set various global variables. Some of these could be parameterized to be used as an 
-#ArcGIS Toolbox script and/or command line use.
+print('### GETTING STARTED ###'.format())
 
-# Set the directory path to the root directory that will be documented
-#_WORKSPACE = r'C:\_GIS' # Logical variable to parameterize for toolbox and/or command line
-_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS'
-#_WORKSPACE = r'C:\Users\dgjones\DOI\NCRN Data Management - Documents\GIS'
-_WORKSPACE_PREFIX = r'C:\Users\goettel\DOI'
-#_WORKSPACE_PREFIX = r'C:\Users\dgjones\DOI'
-xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial'
-#xlsx_path = r'C:\Users\dgjones\DOI\NCRN Data Management - Geospatial'  
+"""
+Set various global variables. Some of these could be parameterized to be used as an 
+ArcGIS Toolbox script and/or command line use.
+"""
+# Currently hardcoded values that may be parameterized if bundling into a tool
+_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented
+
+_WORKSPACE_PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. Use to exclude from path that is documented
+
+xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Create a variable to store the full path to the GIS Library Documenter Excel file
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'
@@ -61,6 +63,7 @@ fgdbs_master_df = pd.DataFrame(
 main_master_df = pd.DataFrame(
     columns = ['Full Name', 'Location', 'Container', 'FeatureDataset', 'Extension/Format', 'Name', 'DataType', 'File Type / Compression', 'Geometry Type', 'SRS', 'Band Count', 'Size (MB)'])
 
+# Create some functions to be used in various places
 def get_files_glob(base_dir, ext):
     """Gets a glob of file paths that .
 
@@ -78,7 +81,7 @@ def get_directory_total_size(directory):
     """Returns the `directory` size in bytes."""
     total_size = 0
     try:
-        # print("[+] Getting the size of", directory)
+        #print("[+] Getting the size of", directory)
         for entry in os.scandir(directory):
             if entry.is_file():
                 # If it's a file, use stat() function
@@ -152,13 +155,10 @@ def get_file_size(file, unit='bytes'):
     except:
         size = None
 
-#Create list of file geodatabases
-for root, dirs, files in scandir.walk(_WORKSPACE):
-    for dir in dirs:
-        if str(dir).endswith(_FGDB_EXT):
-            fgdb_list.append(os.path.join(root, dir))
-
 def desc_fgdb(fgdb_list):
+    """
+    loop over a list of FGDBs to document parameters
+    """
     for fgdb in fgdb_list:
         arcpy.env.workspace = fgdb
         fgdb_path = fgdb.removeprefix(_WORKSPACE_PREFIX)
@@ -172,27 +172,19 @@ def desc_fgdb(fgdb_list):
         table_count = len(tables)
         row_list = [fgdb_path, fgdb_name, file_size, fc_count, fd_count, table_count]
         fgdbs_master_df.loc[len(fgdbs_master_df)] = row_list
-desc_fgdb(fgdb_list)
-
-#Create list of shapefiles
-shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _SHP_EXT)]
-
-#Create list of rasters
-glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _RAST_EXT)]
-for file in glob_list:
-    if os.path.splitext(file)[1] in _RAST_EXT:
-        rast_list.append(file)
-
-#Create list of all files
-file_list = fgdb_list + shp_list + rast_list    
 
 def desc_spatial_data_file(file_list):
+    """
+    loop over a list of feature classes, raster datasets, shapefiles, and rasters to document parameters
+    """
     for file in file_list:
+        # Files in FGDBs
         if _FGDB_EXT in file:
             #print('Starting processing for:{0}'.format(file))
             arcpy.env.workspace = file
             fgdb = os.path.split(file)
             container = fgdb[1]
+            # Feature classes
             datasets = arcpy.ListDatasets(feature_type='feature')
             #print('Finished getting dataset list...')
             datasets = [''] + datasets if datasets is not None else []
@@ -215,6 +207,7 @@ def desc_spatial_data_file(file_list):
                         size_mb = get_file_size(full_file, 'mb')
                     row_list = [name, os.path.dirname(file), container, ds, 'NA', desc.baseName, 'Vector', desc.dataType, desc.shapeType, srs_name, 'NA', size_mb]
                     main_master_df.loc[len(main_master_df)] = row_list
+            # Raster datasets
             rasters = arcpy.ListRasters("*", "GRID")
             if len(rasters) != 0:
                 for r in rasters:
@@ -233,6 +226,7 @@ def desc_spatial_data_file(file_list):
                         size_mb = get_file_size(full_file, 'mb')
                     row_list = [name, os.path.dirname(file), container, ds, 'NA', desc.baseName, desc.dataType, desc.compressionType,'Raster', srs_name, desc.bandCount, size_mb]
                     main_master_df.loc[len(main_master_df)] = row_list
+        # Shapefiles
         elif _SHP_EXT in file:
             name = file.removeprefix(_WORKSPACE_PREFIX)
             ext = _SHP_EXT.strip('.')
@@ -249,6 +243,7 @@ def desc_spatial_data_file(file_list):
                 size_mb = get_file_size(file, 'mb')
             row_list = [file, os.path.dirname(file), '', '', ext, desc.baseName, 'Vector', desc.dataType, desc.shapeType, srs_name, 'NA', size_mb]
             main_master_df.loc[len(main_master_df)] = row_list
+        # Rasters
         elif os.path.splitext(file)[1] in _RAST_EXT:
             name = os.path.splitext(file)[1].removeprefix(_WORKSPACE_PREFIX)
             ext = os.path.splitext(file)[1].strip('.')
@@ -265,22 +260,39 @@ def desc_spatial_data_file(file_list):
                 size_mb = get_file_size(file, 'mb')
             row_list = [file, os.path.dirname(file), '', '', ext, os.path.basename(file), 'Raster', desc.compressionType, 'Raster', srs_name, desc.bandCount, size_mb]
             main_master_df.loc[len(main_master_df)] = row_list
+
+# Populate list of FGDBs
+for root, dirs, files in scandir.walk(_WORKSPACE):
+    for dir in dirs:
+        if str(dir).endswith(_FGDB_EXT):
+            fgdb_list.append(os.path.join(root, dir))
+
+# Document list of FGDBs
+desc_fgdb(fgdb_list)
+
+# Populate list of shapefiles
+shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _SHP_EXT)]
+
+# Populate list of rasters
+glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _RAST_EXT)]
+for file in glob_list:
+    if os.path.splitext(file)[1] in _RAST_EXT:
+        rast_list.append(file)
+
+# Create list of all file types
+file_list = fgdb_list + shp_list + rast_list
+
+# Document list of all files
 desc_spatial_data_file(file_list)
-#print(main_master_df)
 
-#Set path to xlsx workbook and worksheet
+# Set path to xlsx workbook and worksheet
 xlsx_name = os.path.join(xlsx_path, 'NCRN_GIS_Geospatial_Contents.xlsx')
-
-#with pd.ExcelWriter(xlsx_name) as writer:  
-#    fgdbs_master_df.to_excel(writer, sheet_name='FGDBs', index = False)
-#    main_master_df.to_excel(writer, sheet_name='Main', index = False)
-
 book = load_workbook(xlsx_name)
 writer = pd.ExcelWriter(xlsx_name, engine='openpyxl') 
 writer.book = book
 
+# Write output to xlsx and save changes
 writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
 fgdbs_master_df.to_excel(writer, "FGDBs", index = False)
 main_master_df.to_excel(writer, "Main", index = False)
-
 writer.save()
