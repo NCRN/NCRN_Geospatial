@@ -215,9 +215,9 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 return li
             items_str = row['Items']
             items_list = Convert(items_str)
-            dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+            dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
             for item in items_list:
-                path = os.path.join(dir, item)
+                path = os.path.join(dir_path, item)
                 for file_name in os.listdir(path):
                     file = os.path.join(path, file_name)
                     if os.path.isfile(file):
@@ -227,18 +227,18 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             pass
         #Delete files
         try:
-            dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-            for file_name in os.listdir(dir):
-                file = os.path.join(dir, file_name)
+            dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
+            for file_name in os.listdir(dir_path):
+                file = os.path.join(dir_path, file_name)
                 if os.path.isfile(file):
                     os.remove(file)
         except Exception:
             pass
         #Delete empty folders
         try:
-            dir = os.path.join(__ROOT_DIR, row['Local Directory'])
-            for file_name in os.listdir(dir):
-                file = os.path.join(dir, file_name)
+            dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
+            for file_name in os.listdir(dir_path):
+                file = os.path.join(dir_path, file_name)
                 if os.path.isdir(file):
                     os.rmdir(file)
         except Exception:
@@ -445,14 +445,14 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             return li
         out_data_str = row['New File Names']
         out_data_list = Convert(out_data_str)
-        dir = os.path.join(__ROOT_DIR, row['Local Directory'])
+        dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
         path1 = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
         # Read csv into dataframe
-        in_csv = os.path.join(dir, row['File Names'])
+        in_csv = os.path.join(dir_path, row['File Names'])
         df = pd.read_csv(in_csv, low_memory=False)
         df["latitude"] = df["LATITUDE83"].astype(float)
         df["longitude"] = df["LONGITUDE83"].astype(float)
-        out_csv = os.path.join(dir, out_data_list[0])
+        out_csv = os.path.join(dir_path, out_data_list[0])
         if os.path.exists(out_csv):
             os.remove(out_csv)
         # Export dataframe to CSV
