@@ -57,7 +57,7 @@ __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_G
 # DELETE BEFORE COMMITING TO GITHUB
 print('Connecting to ArcGIS Online...')
 try:
-    ## gis = GIS("https://arcgis.com", "Username", "Password")
+    gis = GIS("https://arcgis.com", "Username", "Password")
     print('Connected')
 except:
     print('Not connected')
@@ -331,7 +331,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 # Create new FGDBs as needed
 print('Checking for new FGDBs to create...')
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    #Create FGDB in parent folder (e.g. Open Street Map) 
+    # Create FGDB in parent folder (e.g. Open Street Map) 
     if row['ID'] == 23: ## Select FGDBs to rename using row ID
         gdb_dir = os.path.join(__ROOT_DIR, row['New GDB Directory'])
         gdb_path = os.path.join(gdb_dir, row['New GDB Name'])
@@ -340,8 +340,8 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         else: 
             arcpy.CreateFileGDB_management(gdb_dir, row['New GDB Name'])
             print('Created FGDB: ', row['New GDB Name'])
-    #Create FGDB in same folder (e.g. NWI) 
-    elif ((row['ID'] == 35) or (row['ID'] == 40) or (row['ID'] == 47) or (row['ID'] == 63) or (row['ID'] == 67)): ## Select FGDBs to rename using row ID
+    # Create FGDB in same folder (e.g. NWI) 
+    elif ((row['ID'] == 40) or (row['ID'] == 47) or (row['ID'] == 63) or (row['ID'] == 67)): ## Select FGDBs to create using row ID
         gdb_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
         gdb_path = os.path.join(gdb_dir, row['New GDB Name'])
         if os.path.exists(gdb_path):
@@ -415,7 +415,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             arcpy.management.Delete(out_data)
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4, in_data5, in_data6], out_data)
         print('Merged feature class: ', row['New File Names'])
-    # 5 raster datasets to FGDB in same folder (e.g. 3DEP DEM)
+    # 5 raster datasets to GeoTIFF in same folder (e.g. 3DEP DEM)
     if row['ID'] == 35: ## Select using row ID
         def Convert(string):
             li = list(string.split(", "))
@@ -423,18 +423,13 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
         in_data = (in_data_list[0], in_data_list[1], in_data_list[2], in_data_list[3], in_data_list[4])
-        gdb_dir = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
+        out_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
         out_data = row['New File Names']
-        gdb_path = os.path.join(gdb_dir, out_data)
-        # Delete existing feature classes
-        if arcpy.Exists(gdb_path):
-            arcpy.env.workspace = gdb_dir
-            arcpy.management.Delete(out_data)
         env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
-        arcpy.management.MosaicToNewRaster(in_data, gdb_dir, out_data,
+        arcpy.management.MosaicToNewRaster(in_data, out_dir, out_data,
                                             'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
                                             "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
-        print('Merged feature class: ', out_data)
+        print('Merged raster: ', out_data)
 
 # Convert csv download to point feature class (e.g. NPDES Discharge Points)
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
