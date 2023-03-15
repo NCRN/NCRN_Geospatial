@@ -1,17 +1,41 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Initial working script for downloading GIS data and formatting the NCRN GIS Library.
+--------------------------------------------------------------------------------
+TODO: Add more of a complete description (once the MVP is working and refactored.)
+"""
+
+#__author__ = "NCRN GIS Unit"
+#__copyright__ = "None"
+#__credits__ = [""]
+#__license__ = "GPL"
+#__version__ = "1.0.2"
+#__maintainer__ = "David Jones"
+#__email__ = "david_jones@nps.gov"
+#__status__ = "Staging"
+
+# Import statements for utilized libraries / packages
 import arcpy
 import os
 import sys
 
 print('### GETTING STARTED ###'.format())
 
+"""
+Set various global variables. Some of these could be parameterized to be used in an 
+ArcGIS Toolbox script and/or command line use. 
+"""
 # Currently hardcoded values that may be parameterized if bundling into a tool
-workspace = r'C:\Users\goettel\OneDrive - DOI\Documents' ## Update this to be the directory where the geodatabase should be created
+workspace = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created
 
 in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Currently putting IMD feature classes inside a feature dataset
 
 in_srs = r'NAD_1983_UTM_Zone_18N.prj' ## Update this based on the spatial reference system standard for the network
+
 # Create a spatial reference object
 sr = arcpy.SpatialReference(os.path.join(workspace, in_srs))
 
@@ -177,8 +201,10 @@ monloc_fields_list = [
                         ['REGIONCODE','TEXT','','',4,'REGIONCODE','NULLABLE','NON_REQUIRED',''],
                         ['GROUPCODE','TEXT','','',10,'GROUPCODE','NULLABLE','NON_REQUIRED',''],
                         ['UNITCODE','TEXT','','',10,'UNITCODE','NULLABLE','NON_REQUIRED',''],
+                        ['SUBUNITCODE','TEXT','','',10,'SUBUNITCODE','NULLABLE','NON_REQUIRED',''],
                         ['GROUPNAME','TEXT','','',254,'GROUPNAME','NULLABLE','NON_REQUIRED',''],
                         ['UNITNAME','TEXT','','',254,'UNITNAME','NULLABLE','NON_REQUIRED',''],
+                        ['SUBUNITNAME','TEXT','','',254,'SUBUNITNAME','NULLABLE','NON_REQUIRED',''],
                         ['SITENAME','TEXT','','',254,'SITENAME','NULLABLE','NON_REQUIRED',''],
                         ['LOCATIONTYPE','TEXT','','',25,'LOCATIONTYPE','NULLABLE','NON_REQUIRED',''],
                         ['X','DOUBLE','','','','X','NULLABLE','NON_REQUIRED',''],
@@ -228,8 +254,6 @@ monlocdata_fields_list = [
                 ['EDITUSER','TEXT','','',50,'EDITUSER','NULLABLE','NON_REQUIRED','']
                ]
 
-# TODO: Populate this list with the fields to be added for ECO_MonitoringLocationsLogistics feature classes
-# Use __TYPE__ for the Core Type DOM
 monlogdata_fields_list = [
                 ['LOGIMLOCID','TEXT','','',25,'LOGIMLOCID','NULLABLE','NON_REQUIRED',''],
                 ['IMLOCID','TEXT','','',25,'IMLOCID','NULLABLE','NON_REQUIRED',''],
@@ -302,8 +326,7 @@ domain_fields_dict = {'DATAACCESS': 'DOM_DATAACCESS_NPS2016',
                       'LOGISTICSTYPE': 'DOM_LOGISTICSTYPE_IMD2022'
 }
 
-#Add domain constraints to appropriate fields
-#arcpy.management.AssignDomainToField(in_table, field_name, domain_name, {subtype_code})
+# Add domain constraints to appropriate fields
 for fc in arcpy.ListFeatureClasses():
     fields = arcpy.ListFields(fc)
     for field in fields:
