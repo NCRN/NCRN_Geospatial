@@ -87,7 +87,12 @@ for domain in domains_list:
 ## Create a list of lists for all the domain values to be created
 domain_values_list = []
 for index, row in df_domain_values.iterrows():
-    domain_value = [arcpy.env.workspace, row['Domain Name'], row['Code'], row['Description']]
+    if row['Code'] == True:
+        domain_value = [arcpy.env.workspace, row['Domain Name'], "TRUE", "TRUE"]
+    elif row['Code'] == False:
+        domain_value = [arcpy.env.workspace, row['Domain Name'], "FALSE", "FALSE"]
+    else:
+        domain_value = [arcpy.env.workspace, row['Domain Name'], row['Code'], row['Description']]
     domain_values_list.append(domain_value)
 
 # Added domain values to domains
@@ -182,7 +187,6 @@ for fc in arcpy.ListFeatureClasses():
 domain_fields_dict = {}
 for index, row in df_domains.iterrows():
     domain_fields_dict[row['Field']] = row['Domain Name']
-print(domain_fields_dict)
 
 ## Add domain constraints to appropriate fields
 for fc in arcpy.ListFeatureClasses():
