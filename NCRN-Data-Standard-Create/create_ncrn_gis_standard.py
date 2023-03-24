@@ -21,6 +21,7 @@ import arcpy
 import os
 import sys
 import pandas as pd
+from arcpy import metadata as md
 
 print('### GETTING STARTED ###'.format())
 
@@ -34,7 +35,7 @@ workspace = r'C:\Users\goettel\Downloads'
 
 xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the NCRN GIS Data Standard Excel file
 
-in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
+in_gdb = r'NCRN_Monitoring_Locations_test2.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Currently putting IMD feature classes inside a feature dataset
 
@@ -112,7 +113,6 @@ create_fcs_dict = {1:[locations_pt,'POINT'],
                    5:[locations_logistics_pt, 'POINT'],
                    6:[locations_logistics_ln, 'POLYLINE'],
                    7:[locations_logistics_py, 'POLYGON']}
-
 print(create_fcs_dict)
 
 # Create all the feature classes
@@ -123,7 +123,7 @@ for k, v in create_fcs_dict.items():
 # Feature classes for monitoring locations
 monloc_fields_list = []
 for index, row in df_monloc_fields.iterrows():
-    if row['DataType'] == 'Text':
+    if row['DataType'] == 'TEXT':
         field = [row['Field'], row['DataType'], '', '', row['Length'], row['Alias'], row['Nullable'], row['Required'], '']
         monloc_fields_list.append(field)
     else:
@@ -133,7 +133,7 @@ for index, row in df_monloc_fields.iterrows():
 # Feature classes for monitoring locations data
 monlocdata_fields_list = []
 for index, row in df_monlocdata_fields.iterrows():
-    if row['DataType'] == 'Text':
+    if row['DataType'] == 'TEXT':
         field = [row['Field'], row['DataType'], '', '', row['Length'], row['Alias'], row['Nullable'], row['Required'], '']
         monlocdata_fields_list.append(field)
     else:
@@ -143,7 +143,7 @@ for index, row in df_monlocdata_fields.iterrows():
 # Feature classes for monitoring locations logistics
 monloclogistics_fields_list = []
 for index, row in df_monloclogistics_fields.iterrows():
-    if row['DataType'] == 'Text':
+    if row['DataType'] == 'TEXT':
         field = [row['Field'], row['DataType'], '', '', row['Length'], row['Alias'], row['Nullable'], row['Required'], '']
         monloclogistics_fields_list.append(field)
     else:
@@ -197,18 +197,68 @@ for fc in arcpy.ListFeatureClasses():
                 arcpy.management.AssignDomainToField(fc, field.name, v)
                 print('Assigned [{0}] domain to: [{1}.{2}]'.format(v, fc, field.name))
 
-#Set parameters for creating related tables
+# Set parameters for creating related tables
 primaryKey = "FEATUREID"
 foreignKey = "IMLOCIDFEATUREID"
 
-# Create related tables for monitoring locations data
+# Create related tables
 arcpy.management.CreateRelationshipClass(locations_pt, locations_data_pt, os.path.join(arcpy.env.workspace, "ECO_MonitoringLocations_pt_ECO_MonitoringLocationsData_pt"), "SIMPLE", 'ECO_MonitoringLocationsData_pt', 'ECO_MonitoringLocations_pt', "NONE", "ONE_TO_MANY", "NONE", primaryKey, foreignKey)
+#print: "Created relationship class ..."
 arcpy.management.CreateRelationshipClass(locations_pt, locations_data_ln, os.path.join(arcpy.env.workspace, "ECO_MonitoringLocations_pt_ECO_MonitoringLocationsData_ln"), "SIMPLE", 'ECO_MonitoringLocationsData_ln', 'ECO_MonitoringLocations_pt', "NONE", "ONE_TO_MANY", "NONE", primaryKey, foreignKey)
 arcpy.management.CreateRelationshipClass(locations_pt, locations_data_py, os.path.join(arcpy.env.workspace, "ECO_MonitoringLocations_pt_ECO_MonitoringLocationsData_py"), "SIMPLE", 'ECO_MonitoringLocationsData_py', 'ECO_MonitoringLocations_pt', "NONE", "ONE_TO_MANY", "NONE", primaryKey, foreignKey)
-
-# Create related tables for monitoring locations data
 arcpy.management.CreateRelationshipClass(locations_pt, locations_logistics_pt, os.path.join(arcpy.env.workspace, "ECO_MonitoringLocations_pt_ECO_MonitoringLocationsLogstics_pt"), "SIMPLE", 'ECO_MonitoringLocationLogistics_pt', 'ECO_MonitoringLocations_pt', "NONE", "ONE_TO_MANY", "NONE", primaryKey, foreignKey)
 arcpy.management.CreateRelationshipClass(locations_pt, locations_logistics_ln, os.path.join(arcpy.env.workspace, "ECO_MonitoringLocations_pt_ECO_MonitoringLocationsLogstics_ln"), "SIMPLE", 'ECO_MonitoringLocationLogistics_ln', 'ECO_MonitoringLocations_pt', "NONE", "ONE_TO_MANY", "NONE", primaryKey, foreignKey)
 arcpy.management.CreateRelationshipClass(locations_pt, locations_logistics_py, os.path.join(arcpy.env.workspace, "ECO_MonitoringLocations_pt_ECO_MonitoringLocationsLogstics_py"), "SIMPLE", 'ECO_MonitoringLocationLogistics_py', 'ECO_MonitoringLocations_pt', "NONE", "ONE_TO_MANY", "NONE", primaryKey, foreignKey)
+
+#Remove geoprocessing history from metadata
+fcs_list = locations_pt, locations_data_pt, locations_data_ln, locations_data_py, locations_logistics_pt, locations_logistics_ln, locations_logistics_py
+for fc in fcs_list:
+    myWorkspace = os.path.join(workspace, in_gdb, ds, fc)
+    db_type = "SQL"
+    def RemoveHistory(myWorkspace):
+    ##Removes GP History for feature dataset stored feature classes, and feature classes in the File Geodatabase.
+        arcpy.env.workspace = myWorkspace
+        for fds in arcpy.ListDatasets('','feature') + ['']:
+            for fc in arcpy.ListFeatureClasses('','',fds):
+                data_path = os.path.join(myWorkspace, fds, fc)
+                if isNotSpatialView(myWorkspace, fc):
+                    removeMetaData(data_path)
+                    print("Removed the geoprocessing metadata from: {0}".format(fc))
+        removeMetaData(myWorkspace)
+        print("Removed the geoprocessing metadata from: {0}".format(myWorkspace))
+    def isNotSpatialView(myWorkspace, fc):
+    ##Determines if the item is a spatial view and if so returns True to listFcsInGDB()
+        if db_type != "":
+            desc = arcpy.Describe(fc)
+            fcName = desc.name
+            #Connect to the GDB
+            egdb_conn = arcpy.ArcSDESQLExecute(myWorkspace)
+            #Execute SQL against the view table for the specified RDBMS
+            if db_type == "SQL":
+                db, schema, tableName = fcName.split(".")
+                sql = r"IF EXISTS(select * FROM sys.views where name = '{0}') SELECT 1 ELSE SELECT 0".format(tableName)
+            elif db_type == "Oracle":
+                schema, tableName = fcName.split(".")
+                sql = r"SELECT count(*) from dual where exists (select * from user_views where view_name = '{0}')".format(tableName)
+            elif db_type == "Postgres":
+                db, schema, tableName = fcName.split(".")
+                sql = r"SELECT count(*) from information_schema.views where table_schema NOT IN ('information_schema', 'pg_catalog') and table_name = '{0}'".format(tableName)
+            egdb_return = egdb_conn.execute(sql)
+            if egdb_return == 0:
+                return True
+            else:
+                return False
+        else:
+            return True
+    def removeMetaData(data_path):
+        # Get the metadata for the dataset
+        tgt_item_md = md.Metadata(data_path)
+        # Delete all geoprocessing history from the item's metadata
+        if not tgt_item_md.isReadOnly:
+            tgt_item_md.deleteContent('GPHISTORY')
+            tgt_item_md.deleteContent('THUMBNAIL')
+            tgt_item_md.save()
+    if __name__ == "__main__":
+        RemoveHistory(myWorkspace)
 
 print('### !!! ALL DONE !!! ###'.format())
