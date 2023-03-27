@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Data-Downloader"
+    "\\Data-Downloader",
+    "\\GIS-Library-Documenter"
   ],
-  "SelectedNode": "\\Data-Downloader\\downloadData.py",
+  "SelectedNode": "\\GIS-Library-Documenter\\document_gis_directory.py",
   "PreviewInSolutionExplorer": false
 }

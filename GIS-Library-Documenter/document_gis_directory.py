@@ -35,9 +35,10 @@ Set various global variables. Some of these could be parameterized to be used as
 ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
-_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented
 
-_WORKSPACE_PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. Use to exclude from path that is documented
+_PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. Use to exclude from path that is documented
+
+_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented
 
 xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Create a variable to store the full path to the GIS Library Documenter Excel file
 
@@ -161,7 +162,7 @@ def desc_fgdb(fgdb_list):
     """
     for fgdb in fgdb_list:
         arcpy.env.workspace = fgdb
-        fgdb_path = fgdb.removeprefix(_WORKSPACE_PREFIX)
+        fgdb_path = fgdb.removeprefix(_PREFIX)
         fgdb_name = os.path.basename(fgdb).split('/')[-1]
         file_size = get_size_format(get_folder_size(fgdb))
         fcs = arcpy.ListFeatureClasses()
@@ -193,7 +194,7 @@ def desc_spatial_data_file(file_list):
                 for fc in arcpy.ListFeatureClasses(feature_dataset=ds):
                     #print('Processing a feature class...')
                     full_file = os.path.join(arcpy.env.workspace, ds, fc)
-                    name = full_file.removeprefix(_WORKSPACE_PREFIX)
+                    name = full_file.removeprefix(_PREFIX)
                     desc = arcpy.Describe(fc)
                     try:
                         spatial_ref = arcpy.Describe(fc).SpatialReference
@@ -212,7 +213,7 @@ def desc_spatial_data_file(file_list):
             if len(rasters) != 0:
                 for r in rasters:
                     full_file = os.path.join(arcpy.env.workspace, r)
-                    name = full_file.removeprefix(_WORKSPACE_PREFIX)
+                    name = full_file.removeprefix(_PREFIX)
                     desc = arcpy.Describe(r)
                     try: 
                         spatial_ref = arcpy.Describe(r).SpatialReference
@@ -228,7 +229,7 @@ def desc_spatial_data_file(file_list):
                     main_master_df.loc[len(main_master_df)] = row_list
         # Shapefiles
         elif _SHP_EXT in file:
-            name = file.removeprefix(_WORKSPACE_PREFIX)
+            name = file.removeprefix(_PREFIX)
             ext = _SHP_EXT.strip('.')
             desc = arcpy.Describe(file)                
             try:
@@ -245,7 +246,7 @@ def desc_spatial_data_file(file_list):
             main_master_df.loc[len(main_master_df)] = row_list
         # Rasters
         elif os.path.splitext(file)[1] in _RAST_EXT:
-            name = os.path.splitext(file)[1].removeprefix(_WORKSPACE_PREFIX)
+            name = os.path.splitext(file)[1].removeprefix(_PREFIX)
             ext = os.path.splitext(file)[1].strip('.')
             desc = arcpy.Describe(file)
             try:
