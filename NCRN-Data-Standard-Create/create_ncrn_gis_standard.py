@@ -4,7 +4,7 @@
 """
 Initial working script for downloading GIS data and formatting the NCRN GIS Library.
 --------------------------------------------------------------------------------
-TODO: Add more of a complete description (once the MVP is working and refactored.)
+TODO: Add more of a complete description.
 """
 
 #__author__ = "NCRN GIS Unit"
@@ -31,9 +31,7 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 
-_PREFIX = r'C:\Users\goettel' ## Update this to be the OneDrive account of the user
-
-_WORKSPACE = os.path.join(_PREFIX, 'DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN') ## Update this to be the directory where the geodatabase should be created
+_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created
 
 xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the NCRN GIS Data Standard Excel file
 

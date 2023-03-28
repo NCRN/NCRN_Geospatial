@@ -4,7 +4,7 @@
 """
 Initial working script for downloading GIS data and formatting the NCRN GIS Library.
 --------------------------------------------------------------------------------
-TODO: Add more of a complete description (once the MVP is working and refactored.)
+TODO: Add more of a complete description.
 
 References:
 # https://stackoverflow.com/questions/72088811/how-to-download-a-large-zip-file-25-gb-using-python
@@ -49,11 +49,8 @@ Set various global variables. Some of these could be parameterized to be used in
 ArcGIS Toolbox script and/or command line use. 
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
-_PREFIX = r'C:\Users\goettel' ## Update this to be the OneDrive account of the user
-
-__ROOT_DIR = os.path.join(_PREFIX, r'DOI\NCRN Data Management - Geospatial') ## Set the directory path to the root directory that will be the destination for downloads. Example: _WORKSPACE = r'C:\_GIS'
-
-__XCEL_LIBRARY = os.path.join(_PREFIX, r'DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx') ## Create a variable to store the full path to the GIS Library Sources Excel file
+__ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. Need to update to be the OneDrive account of the user
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the GIS Library Sources Excel file. Need to update to be the OneDrive account of the user
 
 # Specify the ArcGIS Online credentials to use.
 # DELETE BEFORE COMMITING TO GITHUB
@@ -151,6 +148,10 @@ def download_url_list_wget(out_dir, url_list):
     for url in url_list:
         download_url_wget(out_dir, url)
 
+def Convert(string):
+            li = list(string.split(", "))
+            return li
+
 # Read excel into dataframe using Pandas
 df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources')
 
@@ -158,7 +159,7 @@ df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources')
 print("Deleting existing copies before downloading...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if row["Activated"]=='Yes':
-        # Delete files within geodatabase downloads (gdb wasn't renamed - Original GDB Name)
+        # Delete files within geodatabase downloads (gdb wasn't renamed)
         try:
             path = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name'])
             for filename in os.listdir(path):
@@ -168,7 +169,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                     print("Deleted download: {0}".format(filename))
         except Exception:
             pass
-        # Delete files within geodatabase downloads (gdb was renamed - New GDB Name)
+        # Delete files within geodatabase downloads (gdb was renamed)
         try:
             path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
             for filename in os.listdir(path):
@@ -189,13 +190,13 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             path1 = os.path.join(dir, items_list[0])
             path2 = os.path.join(path1, items_list[1])
             path3 = os.path.join(path1, items_list[2])
-            #Delete files within the first subfolder (e.g. spatial) of the primary subfolder (e.g. DC001)
+            # Delete files within the first subfolder (e.g. spatial) in the parent subfolder (e.g. DC001)
             for filename in os.listdir(path2):
                 file = os.path.join(path2, filename)
                 if os.path.isfile(file):
                     os.remove(file)
                     print("Deleted download: {0}".format(filename))
-            #Delete files within the second subfolder (e.g. tabular) of the primary subfolder
+            # Delete files within the second subfolder (e.g. tabular) in the parent subfolder
             try:
                 for filename in os.listdir(path3):
                     file = os.path.join(path3, filename)
@@ -204,17 +205,17 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                         print("Deleted download: {0}".format(filename))
             except:
                 pass
-            #Delete files within the primary subfolder
+            # Delete files within the parent subfolder
             for filename in os.listdir(path1):
                 file = os.path.join(path1, filename)
                 if os.path.isfile(file):
                     os.remove(file)
                     print("Deleted download: {0}".format(filename))
-            #Delete the primary subfolder
+            # Delete the parent subfolder
             os.rmdir(path1)
         except Exception:
                 pass
-        #Delete files within multi-item geodatabase downloads (e.g. 3DEP Contours)
+        # Delete files within multi-item geodatabase downloads (e.g. 3DEP Contours)
         try:
             def Convert(string):
                 li = list(string.split(", "))
@@ -232,7 +233,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 os.rmdir(path)
         except Exception:
             pass
-        #Delete files within download folder
+        # Delete files within download folder
         try:
             dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
             for filename in os.listdir(dir_path):
@@ -242,7 +243,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                     print("Deleted download: {0}".format(filename))
         except Exception:
             pass
-        #Delete empty download folder
+        # Delete empty download folder
         try:
             dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
             for filename in os.listdir(dir_path):
@@ -282,8 +283,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                     if filename.endswith('.zip'):
                         shutil.unpack_archive(fullpath_filename, dest_dir)
                         print("Unzipped: {0}.\n".format(fullpath_filename))
-                        # delete zip file after extract
-                        os.remove(fullpath_filename)
+                        os.remove(fullpath_filename) ## delete zip file after extract
 
 # Download feature service items from ArcGIS Online
 print("Downloading feature service items from ArcGIS Online...")
@@ -300,8 +300,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             if filename.endswith('.zip'):
                 shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
                 print("unzipped: {0}.\n".format(fullpath_filename))
-                # delete zip file after extract
-                os.remove(fullpath_filename)
+                os.remove(fullpath_filename) ## delete zip file after extract
         elif row['Source Data Type']=='Multiple (FileGeodatabase)':
             data_item = data_item.export(title = data_item_id, export_format = 'FileGeodatabase', wait = True)
             data_item.get_data()
@@ -309,9 +308,8 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             fullpath_filename = os.path.join(dest_dir, filename)
             if filename.endswith('.zip'):
                 shutil.unpack_archive(fullpath_filename, dest_dir)
-                print("unzipped: {0}.\n".format(fullpath_filename))
-                # delete zip file after extract
-                os.remove(fullpath_filename)
+                print("unzipped: {0}.\n".format(fullpath_filename))  
+                os.remove(fullpath_filename) ## delete zip file after extract
 
 # Rename geodatabases as needed
 print("Checking for geodatabases to rename...")
@@ -354,9 +352,6 @@ print("Checking for feature classes to merge...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     # 4 feature classes to geodatabase in parent folder (e.g. Open Street Map)
     if ((row['ID'] == 23) or (row['ID'] == 26) or (row['ID'] == 29) or (row['ID'] == 32)): ## Select using row ID
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
         gdb_path = os.path.join(__ROOT_DIR, row['New GDB Directory'], row['New GDB Name'])
@@ -366,17 +361,13 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
         in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
         out_data = os.path.join(gdb_path, row['New File Names'])
-        # Delete existing feature classes
         if arcpy.Exists(out_data):
             arcpy.env.workspace = gdb_path
-            arcpy.management.Delete(out_data)
+            arcpy.management.Delete(out_data) ## Delete existing feature classes
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
-        print("Merged feature class: ", row['New File Names'])
+        print("Merged feature class: {0}".format(row['New File Names']))
     # 4 feature classes to geodatabase in same folder (e.g. NWI)
     if ((row['ID'] == 40) or (row['ID'] == 63)): ## Select using row ID
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
         gdb_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
@@ -386,17 +377,13 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         in_data3 = os.path.join(arcpy.env.workspace, in_data_list[2])
         in_data4 = os.path.join(arcpy.env.workspace, in_data_list[3])
         out_data = os.path.join(gdb_path, row['New File Names'])
-        # Delete existing feature classes
         if arcpy.Exists(out_data):
             arcpy.env.workspace = gdb_path
-            arcpy.management.Delete(out_data)
+            arcpy.management.Delete(out_data) ## Delete existing feature classes
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4], out_data)
-        print("Merged feature class: ", row['New File Names'])
+        print("Merged feature class: {0}".format(row['New File Names']))
     # 6 feature classes to geodatabase in same folder (e.g. contours)
     if row['ID'] == 67: ## Select using row ID
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
         gdb_path = os.path.join(__ROOT_DIR, row['Local Directory'], row['New GDB Name'])
@@ -408,17 +395,13 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         in_data5 = os.path.join(arcpy.env.workspace, in_data_list[4])
         in_data6 = os.path.join(arcpy.env.workspace, in_data_list[5])
         out_data = os.path.join(gdb_path, row['New File Names'])
-        # Delete existing feature classes
         if arcpy.Exists(out_data):
             arcpy.env.workspace = gdb_path
-            arcpy.management.Delete(out_data)
+            arcpy.management.Delete(out_data) ## Delete existing feature classes
         arcpy.management.Merge([in_data1, in_data2, in_data3, in_data4, in_data5, in_data6], out_data)
-        print("Merged feature class: ", row['New File Names'])
+        print("Merged feature class: {0}".format(row['New File Names']))
     # 5 raster datasets to GeoTIFF in same folder (e.g. 3DEP DEM)
     if row['ID'] == 35: ## Select using row ID
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
         in_data_str = row['File Names']
         in_data_list = Convert(in_data_str)
         in_data = (in_data_list[0], in_data_list[1], in_data_list[2], in_data_list[3], in_data_list[4])
@@ -428,15 +411,12 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         arcpy.management.MosaicToNewRaster(in_data, out_dir, out_data,
                                             'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]',
                                             "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
-        print("Merged raster: ", out_data)
+        print("Merged raster: {0}".format(out_data))
 
 # Convert csv download to point feature class (e.g. NPDES Discharge Points)
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if row['Source Data Type'] == 'CSV':
         print("Running xy table to point...")
-        def Convert(string):
-            li = list(string.split(", "))
-            return li
         out_data_str = row['New File Names']
         out_data_list = Convert(out_data_str)
         dir_path = os.path.join(__ROOT_DIR, row['Local Directory'])
@@ -449,7 +429,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         out_csv = os.path.join(dir_path, out_data_list[0])
         if os.path.exists(out_csv):
             os.remove(out_csv)
-        # Export dataframe to CSV
+        # Export dataframe to csv
         df.to_csv(out_csv)
         in_table = out_csv
         out_data = out_data_list[1]
@@ -467,3 +447,5 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                                         x_coords, y_coords, None, 
                                         'GEOGCS["GCS_North_American_1983",DATUM["D_North_American_1983",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]];-400 -400 1920000002.98022;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision')        
         print("xy table to point was successful")
+
+print("### !!! ALL DONE !!! ###".format())
