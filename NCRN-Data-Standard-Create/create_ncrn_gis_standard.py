@@ -33,7 +33,7 @@ ArcGIS Toolbox script and/or command line use.
 
 _WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created
 
-xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the NCRN GIS Data Standard Excel file
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the NCRN GIS Data Standard Excel file
 
 in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
 
@@ -52,11 +52,11 @@ locations_logistics_ln = 'ECO_MonitoringLocationLogistics_ln'
 locations_logistics_py = 'ECO_MonitoringLocationLogistics_py'
 
 ## Read excel into dataframes using Pandas
-df_domains = pd.read_excel(xlsx_path, sheet_name='domains')
-df_domain_values = pd.read_excel(xlsx_path, sheet_name='domain_values')
-df_monloc_fields = pd.read_excel(xlsx_path, sheet_name='monloc_fields')
-df_monlocdata_fields = pd.read_excel(xlsx_path, sheet_name='monlocdata_fields')
-df_monloclogistics_fields = pd.read_excel(xlsx_path, sheet_name='monloclogistics_fields')
+df_domains = pd.read_excel(__XCEL_LIBRARY, sheet_name='domains')
+df_domain_values = pd.read_excel(__XCEL_LIBRARY, sheet_name='domain_values')
+df_monloc_fields = pd.read_excel(__XCEL_LIBRARY, sheet_name='monloc_fields')
+df_monlocdata_fields = pd.read_excel(__XCEL_LIBRARY, sheet_name='monlocdata_fields')
+df_monloclogistics_fields = pd.read_excel(__XCEL_LIBRARY, sheet_name='monloclogistics_fields')
 
 ## Create a spatial reference object
 sr = arcpy.SpatialReference(os.path.join(_WORKSPACE, in_srs))

@@ -37,11 +37,11 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 
-_PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. Use to exclude from path that is documented
+_PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. Script will exclude from path that is documented
 
 _WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented. Set prefix to the user portion of the root directory
 
-xlsx_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx' ## Create a variable to store the full path to the GIS Library Documenter Excel file
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx' ## Create a variable to store the full path to the GIS Library Documenter Excel file
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'
@@ -52,7 +52,7 @@ _SHP_EXT = '.shp'
 # Create a list variable to store file extensions to be ignored
 _EXCLUDE_EXT = ['lock', 'gdbindexes', 'gdbtable', 'gdbtablx', 'horizon', 'spx', 'freelist', 'atx', 'png'] # Logical variable to parameterize for toolbox and/or command line (maybe)
 
-# Create a list variable to store the file extensions for rasters (outside FGDBs)
+# Create a list variable to store the file extensions for rasters (outside geodatabases)
 _RAST_EXT = ['.tif', '.tiff', '.jpg', '.jpeg', '.sid', '.bmp'] # Logical variable to parameterize for toolbox and/or command line
 
 # Create dataframes to record information that is documented
@@ -140,108 +140,127 @@ def get_file_size(file, unit='bytes'):
         size = file_size / 1024 ** exponents_map[unit]
         return round(size, 3)
     except:
-        size = 'Unknown'
+        return 'Unknown'
 
 def desc_fgdb(fgdb_list):
-    """loop over a list of FGDBs to document parameters"""
-    print("Looping over FGDBs...")
+    """loop over a list of geodatabases to document parameters"""
+    print("Looping over geodatabases...")
     for fgdb in fgdb_list:
         arcpy.env.workspace = fgdb
-        fgdb_path = fgdb.removeprefix(_PREFIX)
-        fgdb_name = os.path.basename(fgdb).split('/')[-1]
-        file_size = get_size_format(get_folder_size(fgdb))
+        fgdb_path = fgdb.removeprefix(_PREFIX) ## Full path of the geodatabase
+        fgdb_name = os.path.basename(fgdb).split('/')[-1] ## Name of the geodatabase
+        file_size = get_size_format(get_folder_size(fgdb)) ## File size of the geodatabase
         fcs = arcpy.ListFeatureClasses()
-        fc_count = len(fcs)
+        fc_count = len(fcs) ## Number of feature classes in the geodatabase
         fds = arcpy.ListDatasets("","")
-        fd_count = len(fds)
+        fd_count = len(fds) ## Number of feature datasets in the geodatabase
         tables = arcpy.ListTables()
-        table_count = len(tables)
+        table_count = len(tables) ## Number of tables in the geodatabase
         row_list = [fgdb_path, fgdb_name, file_size, fc_count, fd_count, table_count]
         fgdbs_master_df.loc[len(fgdbs_master_df)] = row_list
 
 def desc_fgdb_file(fgdb_list):
     """loop over a list of geodatabases to document parameters of the feature classes and rasters it contains"""
-    print("Looping over feature classes and rasters within FGDBs...")
-    for file in fgdb_list:
-        arcpy.env.workspace = file
-        fgdb = os.path.split(file)
-        container = fgdb[1]
+    print("Looping over feature classes and rasters within geodatabases...")
+    for fgdb in fgdb_list:
+        arcpy.env.workspace = fgdb
+        fgdb_name = os.path.split(fgdb) 
+        container = fgdb_name[1] ## Geodatabase that contains the file
+        ext = 'NA' ## Extension/format of the file
         datasets = arcpy.ListDatasets(feature_type='feature')
         datasets = [''] + datasets if datasets is not None else []
         for ds in datasets:
             # Loop over feature classes
             for fc in arcpy.ListFeatureClasses(feature_dataset=ds):
-                full_file = os.path.join(arcpy.env.workspace, ds, fc)
-                name = full_file.removeprefix(_PREFIX)
-                full_location = os.path.dirname(file)
-                location = full_location.removeprefix(_PREFIX)
-                desc = arcpy.Describe(fc)
-                try:
-                    spatial_ref = arcpy.Describe(fc).SpatialReference
-                    srs_name = spatial_ref.Name
-                except:
-                    srs_name = 'Unknown'
-                    pass
-                if get_file_size(full_file, 'mb') == None:
-                    size_mb = 'Unknown'
+                fullpath_filename = os.path.join(arcpy.env.workspace, ds, fc)
+                full_name = fullpath_filename.removeprefix(_PREFIX) ## Folder path and name of the feature class
+                folder_path = os.path.dirname(fgdb)
+                location = folder_path.removeprefix(_PREFIX) ## Directory location of the fc
+                if ds == '': ## Name of the feature dataset that contains the fc
+                    featuredataset = 'NA'
                 else:
-                    size_mb = get_file_size(full_file, 'mb')
-                row_list = [name, location, container, ds, 'NA', desc.baseName, 'Vector', desc.dataType, desc.shapeType, srs_name, 'NA', size_mb]
+                    featuredataset = ds
+                desc = arcpy.Describe(fc)
+                name = desc.baseName ## Name of the fc
+                data_type = 'Vector' ## Data type of the fc
+                file_type = desc.dataType ## File type/compression of the fc
+                geometry_type = desc.shapeType ## Geometry type of the fc
+                srs = get_srs_name(fc)
+                band_count = 'NA'
+                size_mb = get_file_size(fullpath_filename, 'mb')
+                row_list = [full_name, location, container, featuredataset, ext, name, data_type, file_type, geometry_type, srs, band_count, size_mb]
                 main_master_df.loc[len(main_master_df)] = row_list
             # Loop over raster datasets
-            for r in arcpy.ListRasters("*", "GRID"):
-                full_file = os.path.join(arcpy.env.workspace, ds, r)
-                name = full_file.removeprefix(_PREFIX)
-                full_location = os.path.dirname(file)
-                location = full_location.removeprefix(_PREFIX)
-                desc = arcpy.Describe(r)
-                try: 
-                    spatial_ref = arcpy.Describe(r).SpatialReference
-                    srs_name = spatial_ref.Name
-                except:
-                    srs_name = 'Unknown'
-                    pass
-                if get_file_size(full_file, 'mb') == None:
-                    size_mb = 'Unknown'
+            for r in arcpy.ListRasters('*', 'GRID'):
+                fullpath_filename = os.path.join(arcpy.env.workspace, ds, r)
+                full_name = fullpath_filename.removeprefix(_PREFIX)
+                folder_path = os.path.dirname(fgdb)
+                location = folder_path.removeprefix(_PREFIX)
+                if ds == '':
+                    featuredataset = 'NA'
                 else:
-                    size_mb = get_file_size(full_file, 'mb')
-                row_list = [name, location, container, ds, 'NA', desc.baseName, desc.dataType, desc.compressionType,'Raster', srs_name, desc.bandCount, size_mb]
+                    featuredataset = ds
+                desc = arcpy.Describe(r)
+                name = desc.baseName
+                data_type = 'FGDB Raster'
+                file_type = desc.compressionType
+                geometry_type = 'Raster'
+                srs = get_srs_name(r)
+                band_count = desc.bandCount ## Band count of the raster
+                size_mb = get_file_size(fullpath_filename, 'mb')
+                row_list = [full_name, location, container, featuredataset, ext, name, data_type, file_type, geometry_type, srs, band_count, size_mb]
                 main_master_df.loc[len(main_master_df)] = row_list
         
 def desc_shapefile(shp_list):                
     """loop over a list of shapefiles to document parameters"""
     print("Looping over shapefiles...")
-    for file in shp_list:
-        name = file.removeprefix(_PREFIX)
-        full_location = os.path.dirname(file)
-        location = full_location.removeprefix(_PREFIX)
+    for shp in shp_list:
+        full_name = shp.removeprefix(_PREFIX)
+        folder_path = os.path.dirname(shp)
+        location = folder_path.removeprefix(_PREFIX)
+        container = 'NA'
+        featuredataset = 'NA'
         ext = _SHP_EXT.strip('.')
-        desc = arcpy.Describe(file)                
-        size_mb = get_file_size(file, 'mb')
-        row_list = [name, location, '', '', ext, desc.baseName, 'Vector', desc.dataType, desc.shapeType, get_srs_name(file), 'NA', size_mb]
+        desc = arcpy.Describe(shp)
+        name = desc.baseName
+        data_type = 'Vector'
+        file_type = desc.dataType
+        geometry_type = desc.shapeType
+        srs = get_srs_name(shp)
+        band_count = 'NA'
+        size_mb = get_file_size(shp, 'mb')
+        row_list = [full_name, location, container, featuredataset, ext, name, data_type, file_type, geometry_type, srs, band_count, size_mb]
         main_master_df.loc[len(main_master_df)] = row_list
         
 def desc_raster(rast_list):
     """loop over a list of rasters to document parameters"""
     print("Looping over rasters...")
-    for file in rast_list:
-        name = file.removeprefix(_PREFIX)
-        full_location = os.path.dirname(file)
-        location = full_location.removeprefix(_PREFIX)
-        ext = os.path.splitext(file)[1].strip('.')
-        desc = arcpy.Describe(file)
-        size_mb = get_file_size(file, 'mb')
-        row_list = [name, location, '', '', ext, os.path.basename(file), 'Raster', desc.compressionType, 'Raster', get_srs_name(file), desc.bandCount, size_mb]
+    for rast in rast_list:
+        full_name = rast.removeprefix(_PREFIX)
+        folder_path = os.path.dirname(rast)
+        location = folder_path.removeprefix(_PREFIX)
+        container = 'NA'
+        featuredataset = 'NA'
+        ext = os.path.splitext(rast)[1].strip('.')
+        desc = arcpy.Describe(rast)
+        name = os.path.basename(rast)
+        data_type = 'Raster'
+        file_type = desc.compressionType
+        geometry_type = 'Raster'
+        srs = get_srs_name(rast)
+        band_count = desc.bandCount
+        size_mb = get_file_size(rast, 'mb')
+        row_list = [full_name, location, container, featuredataset, ext, name, data_type, file_type, geometry_type, srs, band_count, size_mb]
         main_master_df.loc[len(main_master_df)] = row_list
 
-# Populate list of FGDBs
+# Populate list of geodatabases
 fgdb_list = []
 for root, dirs, files in scandir.walk(_WORKSPACE):
-    for dir in dirs:
-        if str(dir).endswith(_FGDB_EXT):
-            fgdb_list.append(os.path.join(root, dir))
+    for folder in dirs:
+        if str(folder).endswith(_FGDB_EXT):
+            fgdb_list.append(os.path.join(root, folder))
 
-# Document list of FGDBs
+# Document list of geodatabases
 desc_fgdb(fgdb_list)
 
 # Populate list of shapefiles
@@ -250,9 +269,9 @@ shp_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_f
 # Populate list of rasters
 rast_list = []
 glob_list = [os.path.join(os.path.dirname(f), os.path.basename(f)) for f in get_files_glob(_WORKSPACE, _RAST_EXT)]
-for file in glob_list:
-    if os.path.splitext(file)[1] in _RAST_EXT:
-        rast_list.append(file)
+for rast in glob_list:
+    if os.path.splitext(rast)[1] in _RAST_EXT:
+        rast_list.append(rast)
 
 # Document lists of files
 desc_fgdb_file(fgdb_list)
@@ -260,8 +279,8 @@ desc_shapefile(shp_list)
 desc_raster(rast_list)
 
 # Set path to xlsx workbook and worksheet
-book = load_workbook(xlsx_path)
-writer = pd.ExcelWriter(xlsx_path, engine='openpyxl') 
+book = load_workbook(__XCEL_LIBRARY)
+writer = pd.ExcelWriter(__XCEL_LIBRARY, engine='openpyxl') 
 writer.book = book
 
 # Write output to xlsx and save changes
