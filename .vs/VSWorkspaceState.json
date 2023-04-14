@@ -3,8 +3,9 @@
     "",
     "\\Data-Downloader",
     "\\GIS-Library-Documenter",
-    "\\NCRN-Data-Standard-Create"
+    "\\NCRN-Data-Standard-Create",
+    "\\Veg-Directions"
   ],
-  "SelectedNode": "\\GIS-Library-Documenter\\document_gis_directory.py",
+  "SelectedNode": "\\Veg-Directions\\create_directions_list.py",
   "PreviewInSolutionExplorer": false
 }

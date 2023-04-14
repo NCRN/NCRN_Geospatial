@@ -41,7 +41,7 @@ _PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. 
 
 _WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented. Set prefix to the user portion of the root directory
 
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx' ## Create a variable to store the full path to the GIS Library Documenter Excel file
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx' ## Create a variable to store the full path to the Excel file
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'

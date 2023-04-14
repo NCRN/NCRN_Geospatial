@@ -50,7 +50,7 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 __ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. Need to update to be the OneDrive account of the user
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the GIS Library Sources Excel file. Need to update to be the OneDrive account of the user
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the Excel file. Need to update to be the OneDrive account of the user
 
 # Specify the ArcGIS Online credentials to use.
 # DELETE BEFORE COMMITING TO GITHUB
@@ -70,35 +70,12 @@ except:
     print("Not connected")
 
 # Create some functions to be used in various places
-
-# Setup progress box
-def get_file_size_requests(url):
-    """
-    Utility function to get the size of a file at a URL using requests library.
-        NOTE: May not work on all file types and all endpoints.
-
-    Keyword arguments:
-    url -- The full URL of a file on the internet as a string.
-        Example: r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip'
-
-    Return:
-    size -- File size in bytes as integer
-    """
-    # Create a request for URL head content and store in variable
-    response = requests.head(url)
-    # Parse the header of the request response and get the Content Length (i.e., file size in bytes)
-    size = int(response.headers['Content-Length'])
-    # Return the file size in bytes
-    return size
-
 def download_progress_bar_custom(current, total, width=80):
     """
     Utility function to create a custom progress bar
-
     Keyword arguments:
     current -- The full URL of a file on the internet as a string.
         Example: r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip'
-
     Return:
     size -- File size in bytes as integer
     """
@@ -117,7 +94,6 @@ def download_url_wget(out_dir, url):
     url -- A single URLs
         Example:    r'https://www.fws.gov/wetlands/Data/State-Downloads/DC_shapefile_wetlands.zip'
     """
-
     # Create a datetime object for current date/time before download
     start_dtm = datetime.datetime.now()
     # Print status to Python console with start time
@@ -174,7 +150,7 @@ df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources')
 # Delete existing copies of activated downloads
 print("Deleting existing copies before downloading...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if row["Activated"]=='Yes':
+    if row['Activated'] == 'Yes':
         # Delete files within geodatabase downloads (gdb wasn't renamed)
         try:
             fullpath_fgdbname = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name']) ## Full path of the geodatabase
@@ -239,9 +215,9 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 # Download activated URLs
 print("Downloading URLs...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if ((row['Status']=='URL') & (row["Activated"]=='Yes')):
+    if ((row['Status'] == 'URL') & (row['Activated'] == 'Yes')):
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory']) ## Destination in the directory where the download will be sent
-        if row['Source Type']=='Dataset':
+        if row['Source Type'] == 'Dataset':
             url = row['Web File for Download']
             filename = url.split('/')[-1] ## Name of the download
             fullpath_filename = os.path.join(dest_dir, filename) ## Folder path and name of the download
@@ -252,7 +228,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 ## delete zip file after extract
                 os.remove(fullpath_filename)
         # Download multi-item URLs (e.g. 3DEP Contours)
-        elif row['Source Type']=='Datasets':
+        elif row['Source Type'] == 'Datasets':
                 # Convert string of items to parsable list
                 items_str = row['Items']
                 items_list = Convert(items_str)
@@ -274,7 +250,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
         data_item_id = row['Data Item ID']
         data_item = gis.content.get(data_item_id)
-        if row['Source Data Type']=='FileGeodatabase':       
+        if row['Source Data Type'] == 'FileGeodatabase':       
             data_item.get_data()
             filename = data_item.download(dest_dir)
             ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
@@ -285,7 +261,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 ## delete zip file after extract
                 os.remove(fullpath_filename)
         # Feature service items with multiple download format options
-        elif row['Source Data Type']=='Multiple (FileGeodatabase)':
+        elif row['Source Data Type'] == 'Multiple (FileGeodatabase)':
             data_item = data_item.export(title = data_item_id, export_format = 'FileGeodatabase', wait = True)
             data_item.get_data()
             filename = data_item.download(dest_dir)
