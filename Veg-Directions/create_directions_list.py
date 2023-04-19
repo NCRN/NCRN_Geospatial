@@ -30,6 +30,10 @@ import docxtpl
 from docxtpl import DocxTemplate
 import os
 import pandas as pd
+import sys
+from reportlab.pdfgen.canvas import Canvas
+import comtypes.client
+import time
 
 print("### GETTING STARTED ###".format())
 
@@ -39,7 +43,7 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 
-main_path = r'C:\Users\goettel\DOI\NPS-NCRN-Forest Veg - Documents\General\Field_Maps_2023'
+main_path = r'C:\Users\goettel\DOI\NPS-NCRN-Forest Veg - Documents\General\Field_Maps_2023\Directions'
 template_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\Templates\NCRN\Directions_Template.docx' ## Create a variable to store the full path to the Word doc template. Set prefix to the user portion of the root directory
 __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_Veg_Locations_Directions_Master.xlsx' ## Create a variable to store the full path to the Excel file. Set prefix to the user portion of the root directory
 
@@ -90,6 +94,29 @@ for index, row in df_areas.iterrows():
             row[4].text = '{{Map_N}}'
             filled_template.save(filled_path)
         to_fill_in = {}
+
     filled_template.render(to_fill_in)
     filled_template.save(filled_path)
     print("Done adding plots to %s" % str(to_fill_in_area['Area_Name']))
+
+def covx_to_pdf(in_file, out_file):
+    """Convert a Word .docx to PDF"""
+    wdFormatPDF = 17
+    word = comtypes.client.CreateObject('Word.Application')
+    word.Visible = False
+    doc = word.Documents.Open(in_file)
+    time.sleep(7)
+    doc.SaveAs(out_file, FileFormat = wdFormatPDF)
+    doc.Close()
+    word.Quit()
+
+panel_list = 'Panel 1', 'Panel 2', 'Panel 3', 'Panel 4'
+for panel in panel_list:
+    folder_path = os.path.join(main_path, panel)
+    for filename in os.listdir(folder_path):
+        in_file = os.path.join(folder_path, filename)
+        out_filename = filename.replace('.docx', '.pdf')
+        out_file = os.path.join(folder_path, out_filename)
+        canvas = Canvas(out_file)
+        covx_to_pdf(in_file, out_file)
+        print("Success: {0} was converted to PDF".format(filename))
