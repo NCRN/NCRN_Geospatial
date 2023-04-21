@@ -3,8 +3,10 @@
     "",
     "\\Data-Downloader",
     "\\GIS-Library-Documenter",
-    "\\NCRN-Data-Standard-Create",
-    "\\Veg-Directions"
+    "\\GOettelVSProject",
+    "\\Map-Packet",
+    "\\NCRN-Data-Standard-Create"
   ],
+  "SelectedNode": "\\Map-Packet\\create_map_packet.py",
   "PreviewInSolutionExplorer": false
 }

@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-Initial working script for downloading GIS data and formatting the NCRN GIS Library.
+Abstract: Initial working script for creating a geodatabase for monitoring locations.
+
+Description:
+The purpose of this script is to create the NCRN Monitoring Locations geodatabase.
+An excel spreadsheet will define the parameters for the feature classes and domains.
+
+TODO: Additional refactoring
 --------------------------------------------------------------------------------
-TODO: Add more of a complete description.
-"""
 
 #__author__ = "NCRN GIS Unit"
 #__copyright__ = "None"
@@ -15,6 +19,7 @@ TODO: Add more of a complete description.
 #__maintainer__ = "David Jones"
 #__email__ = "david_jones@nps.gov"
 #__status__ = "Staging"
+"""
 
 # Import statements for utilized libraries / packages
 import arcpy
@@ -31,9 +36,9 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 
-_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created
+_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the Excel file
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
 

@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-Document a GIS directory.
+Abstract: Initial working script for documenting a GIS Library.
+
+Description: 
+The purpose of this script is to document the contents of the NCRN GIS OneDrive Library and write the outputs to an Excel spreadsheet.
+The script documents (1) geodatabases and (2) feature classes, shapefiles, and rasters
+
+TODO: Additional refactoring
 --------------------------------------------------------------------------------
-TODO: Add more of a complete description.
+
 
 References:
 https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
@@ -38,10 +44,8 @@ ArcGIS Toolbox script and/or command line use.
 # Currently hardcoded values that may be parameterized if bundling into a tool
 
 _PREFIX = r'C:\Users\goettel' ## Set to the user portion of the root directory. Script will exclude from path that is documented
-
-_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented. Set prefix to the user portion of the root directory
-
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx' ## Create a variable to store the full path to the Excel file
+_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS' ## Set the directory path to the root directory that will be documented. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Geospatial_Contents.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 # Create a variable to store the file extension for file geodatabases
 _FGDB_EXT = '.gdb'

@@ -2,15 +2,20 @@
 # -*- coding: utf-8 -*-
 
 """
-Initial working script for downloading GIS data and formatting the NCRN GIS Library.
---------------------------------------------------------------------------------
-TODO: Add more of a complete description.
+Abstract: Initial working script for downloading GIS data and formatting the NCRN GIS Library.
 
+Description: 
+The purpose of this script is to download internal and authoritative external data sources to the NCRN GIS Library.
+An excel spreadsheet will define the parameters for the location of each download in the directory.
+The two items that the script accepts at the moment are URLs and ArcGIS Online Data Item IDs.
+The script will unzip the downloads and finally preform geoproccessing on select downloads.
+
+TODO: Additional refactoring
+--------------------------------------------------------------------------------
 References:
 # https://stackoverflow.com/questions/72088811/how-to-download-a-large-zip-file-25-gb-using-python
 # https://stackoverflow.com/questions/37573483/progress-bar-while-download-file-over-http-with-requests
 TEST CHANGE
-"""
 
 #__author__ = "NCRN GIS Unit"
 #__copyright__ = "None"
@@ -20,10 +25,11 @@ TEST CHANGE
 #__maintainer__ = "David Jones"
 #__email__ = "david_jones@nps.gov"
 #__status__ = "Staging"
+"""
 
 # Import statements for utilized libraries / packages
 from ast import If
-import datetime
+from datetime import date
 import os
 import sys
 import pandas as pd
@@ -49,8 +55,8 @@ Set various global variables. Some of these could be parameterized to be used in
 ArcGIS Toolbox script and/or command line use. 
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
-__ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. Need to update to be the OneDrive account of the user
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the Excel file. Need to update to be the OneDrive account of the user
+__ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 # Specify the ArcGIS Online credentials to use.
 # DELETE BEFORE COMMITING TO GITHUB
@@ -143,6 +149,17 @@ def Clear_Folder(folder_path):
         if os.path.isfile(fullpath_filename):
             os.remove(fullpath_filename)
             print("Deleted download: {0}".format(filename))
+
+def Write_Date_to_Text_File(dest_dir):
+    """
+    Writes date of a download to a text file in the same folder
+    """
+    today = date.today()
+    d1 = today.strftime("%d/%m/%Y")
+    textfilename = filename + '.txt'
+    fullpath_textfilename = os.path.join(dest_dir, textfilename)
+    with open(fullpath_textfilename, 'w') as f:
+        f.write(d1)
 
 # Read excel into dataframe using Pandas
 df_NCRN_GIS_Data_Sources = pd.read_excel(__XCEL_LIBRARY, sheet_name='Sources')
@@ -242,6 +259,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                         print("Unzipped: {0}.\n".format(fullpath_filename))
                         ## delete zip file after extract
                         os.remove(fullpath_filename)
+Write_Date_to_Text_File(dest_dir)
 
 # Download feature service items from ArcGIS Online
 print("Downloading feature service items from ArcGIS Online...")
@@ -271,6 +289,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 print("unzipped: {0}.\n".format(fullpath_filename))  
                 ## delete zip file after extract
                 os.remove(fullpath_filename) 
+Write_Date_to_Text_File(dest_dir)
 
 # Rename geodatabases as needed
 print("Checking for geodatabases to rename...")
