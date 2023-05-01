@@ -29,20 +29,18 @@ import PyPDF2
 import os
 import shutil
 
-
 print("### GETTING STARTED ###".format())
 
 """
 Set various global variables. Some of these could be parameterized to be used in an 
 ArcGIS Toolbox script and/or command line use. 
 """
+
 # Currently hardcoded values that may be parameterized if bundling into a tool
 __ROOT_DIR = r'C:\Users\goettel\DOI\NPS-NCRN-Forest Veg - Documents\General\Field_Maps_2023' ## Set the directory path to the root directory that will be the destination for outputs. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 def Clear_Folder(folder_path):
-    """
-    Takes the path of a folder or geodatabase and deletes the files within it
-    """
+    """ Takes the path of a folder and deletes the files within it """
     try:
         for filename in os.listdir(folder_path):
             fullpath_filename = os.path.join(folder_path, filename)
@@ -51,70 +49,111 @@ def Clear_Folder(folder_path):
     except:
         pass
 
-def add_map_suffix(folder_path):
-    for filename in os.listdir(folder_path):
+def add_map_suffix(map_folder_path):
+    """
+    Adds '01' to the end of all PDF files in the given map folder 
+    '01' orders map before the directions sheets
+    """
+    for filename in os.listdir(map_folder_path):
+        # Skip if already has '01'
         if filename.endswith('01.pdf'):
             pass
-        else:
-            src = os.path.join(folder_path, filename)
+        elif filename.endswith('.pdf'):
+            src = os.path.join(map_folder_path, filename)
             root_ext = os.path.splitext(filename)
             root = root_ext[0]
             new_filename = root + ' 01' + '.pdf'
-            dst = os.path.join(folder_path, new_filename)
+            dst = os.path.join(map_folder_path, new_filename)
             os.rename(src, dst)
 
-def create_pdf_list(folder_path, list_name):
+def create_pdf_list(pdf_folder_path, pdf_list_name):
     """
     Creates a list of PDFs
-    Takes (1) the folder path to the PDFs that will be added to the list (2) what you want to name the list 
+    Requires (1) the folder containg the pdfs and (2) what you want to call the output list
     """
-    for filename in os.listdir(folder_path):
-        # Makes sure only PDFs are added to the list
+    for filename in os.listdir(pdf_folder_path):
+        # only PDFs are added to the list
         if filename.endswith('.pdf'):
-            list_name.append(os.path.join(folder_path, filename))
-    # Sorts the list alphabetically
-    list_name.sort(key = str.lower)
+            pdf_list_name.append(os.path.join(pdf_folder_path, filename))
+    # Sorts list ABC
+    pdf_list_name.sort(key = str.lower)
 
-def merge_pdfs(pdfiles, name):
+def merge_pdfs(pdf_list, name):
     """
-    Merges PDFs into one document
-    Takes (1) a list of PDFs (2) what you want to name the document
+    Takes a list of PDFs and merges them into one PDF
+    Requires (1) a list of PDFs (2) what you want to name the output PDF
     """
     pdfMerge = PyPDF2.PdfFileMerger()
-    for filename in pdfiles:
-            pdfFile = open(filename, 'rb')
-            pdfReader = PyPDF2.PdfFileReader(pdfFile)
-            pdfMerge.append(pdfReader)
+    for filename in pdf_list:
+        pdfFile = open(filename, 'rb')
+        pdfReader = PyPDF2.PdfFileReader(pdfFile)
+        pdfMerge.append(pdfReader)
     pdfFile.close()
     pdfMerge.write(os.path.join(__ROOT_DIR, 'Packets', name))
 
 def copy_paste_files(source_folder, destination_folder):
+    """
+    Copies all PDFs from one folder to another
+    """
     for filename in os.listdir(source_folder):
+        source = os.path.join(source_folder, filename)
+        destination = os.path.join(destination_folder, filename)
+        # only PDFs are copied
         if filename.endswith('.pdf'):
-            # construct full file path
-            source = os.path.join(source_folder, filename)
-            destination = os.path.join(destination_folder, filename)
-            # copy only files
-            if os.path.isfile(source):
-                shutil.copy(source, destination)
-                print('copied', filename)
+            shutil.copy(source, destination)
+            print('copied', filename)
 
+# Create a list with the four panel folders to loop over
 panel_list = 'Panel_1', 'Panel_2', 'Panel_3', 'Panel_4'
 
 for panel in panel_list:
-    folder_path = os.path.join(__ROOT_DIR, panel, 'Maps')
-    add_map_suffix(folder_path)
+
+
+# copy landscape maps to main maps folder
+folder_maps_land_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps', 'Landscape')
+folder_maps_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps')
+copy_paste_files(folder_maps_land_panel1, folder_maps_panel1)
+
+# convert maps in portrait folder to landscape and copy to main maps folder
+
+def pdf_port_to_land(portrait_maps_folder, maps_folder):
+    for filename in os.listdir(portrait_maps_folder):
+        input_fullpath_filename = os.path.join(portrait_maps_folder, filename)
+        output_fullpath_filename = os.path.join(maps_folder, filename)
+        pdf_in = open(input_fullpath_filename, 'rb')
+        pdf_reader = PyPDF2.PdfFileReader(pdf_in)
+        pdf_writer = PyPDF2.PdfFileWriter()
+        numofpages = pdf_reader.numPages
+        numrotated = 0 
+        for pagenum in range(numofpages):
+            page = pdf_reader.getPage(pagenum)
+            mb = page.mediaBox
+            if (mb.upperRight[1] > mb.upperRight[0]) and (page.get('/Rotate') is None):
+                page.rotateCounterClockwise(90)
+                numrotated = numrotated + 1
+            pdf_writer.addPage(page)
+        print(str(numrotated) + " of " + str(numofpages) + " pages were rotated")
+        pdf_out = open(output_fullpath_filename, 'wb')
+        pdf_writer.write(pdf_out)
+        pdf_out.close()
+        pdf_in.close()
+
+
+folder_maps_port_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps', 'Portrait')
+pdf_port_to_land(folder_maps_port_panel1, folder_maps_panel1)
+
+
+
+add_map_suffix(folder_maps_panel1)
 
 # Clear maps/directions folder
-for panel in panel_list:
-    Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Maps_Directions_Combined'))
+Clear_Folder(os.path.join(__ROOT_DIR, 'Panel_1', 'Maps_Directions_Combined'))
 
 # Set the folder path to the Legend pdf
 folder_legend = os.path.join(__ROOT_DIR, 'Legend')
 # Create a list to populate with the Legend pdf
 pdfiles_legend = []
 create_pdf_list(folder_legend, pdfiles_legend)
-
 
 # Eventually refactor so that it is a loop
 #for panel in panel_list = 
@@ -132,7 +171,6 @@ folder_overview_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Overview')
 pdfiles_overvew_panel1 = []
 create_pdf_list(folder_overview_panel1, pdfiles_overvew_panel1)
 
-folder_maps_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps')
 folder_directions_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Directions')
 folder_maps_directions_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps_Directions_Combined')
 

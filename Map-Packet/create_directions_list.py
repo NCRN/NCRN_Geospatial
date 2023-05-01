@@ -7,8 +7,8 @@ Abstract: Initial working script for creating directions to veg monitoring locat
 Description:
 The purpose of this script is to create directions sheets for NCRN Vegetation Monitoring.
 An excel spreadsheet will define the parameters for populating a Word template.
-Each output documents contains monitoring locations that have the same "Area" or "Route" for each panel (1-4)
-Finally, the script will convert the Word documents to PDFs so that they can be included in the map packet.
+Each output docx contains monitoring locations with the same "Map" and "Area" for each panel (1-4)
+Finally, the script will convert the Word docx to PDFs so that they can be included in the map packet.
 
 TODO: Additional Refactoring
 --------------------------------------------------------------------------------
@@ -28,19 +28,19 @@ References:
 # Import statements for utilized libraries / packages
 from cmath import nan
 from tkinter.tix import ROW
-import openpyxl
 from openpyxl import load_workbook
-import docx
 from docx import Document
-import docxtpl
+from docx.enum.section import WD_ORIENT
 from docxtpl import DocxTemplate
-import os
 import pandas as pd
 import sys
 from reportlab.pdfgen.canvas import Canvas
 import comtypes.client
 import time
 import fitz
+import shutil
+import os
+from os import path
 
 print("### GETTING STARTED ###".format())
 
@@ -48,6 +48,7 @@ print("### GETTING STARTED ###".format())
 Set various global variables. Some of these could be parameterized to be used in an 
 ArcGIS Toolbox script and/or command line use. 
 """
+
 # Currently hardcoded values that may be parameterized if bundling into a tool
 __ROOT_DIR = r'C:\Users\goettel\DOI\NPS-NCRN-Forest Veg - Documents\General\Field_Maps_2023' ## Set the directory path to the root directory that will be the destination for outputs. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 template_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\Templates\NCRN\Directions_Template.docx' ## Create a variable to store the full path to the Word doc template. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
@@ -55,9 +56,7 @@ __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_V
 
 # Create some functions to be used in various places
 def Clear_Folder(folder_path):
-    """
-    Takes the path of a folder or geodatabase and deletes the files within it
-    """
+    """Takes the path of a folder or geodatabase and deletes the files within it"""
     for filename in os.listdir(folder_path):
         fullpath_filename = os.path.join(folder_path, filename)
         if os.path.isfile(fullpath_filename):
@@ -66,129 +65,177 @@ def Clear_Folder(folder_path):
             except:
                 pass
 
-def create_blank_docx(panel, Map):
-    document = Document()
-    filename = 'blank page' + '03' + Map
-    file_path = os.path.join(__ROOT_DIR, panel, 'Directions', filename)
-    document.save(file_path)
+def create_blank_docx(panel_folder, Map_List):
+    """
+    Use to create a blank Word .docx
+    e.g. panel_folder = 'Panel_1' (The panel folder the maps are located in. All maps must be in the same panel folder.)
+    e.g. Map_List = 'Map_Name1', 'Map_Name3', 'Map_Name5' (The maps that a blank document will be placed behind)
+    """
+    for Map in Map_List:
+        document = Document()
+        # Change orientation of the output document to landscape
+        sections = document.sections
+        section = sections[0]
+        new_width, new_height = section.page_height, section.page_width
+        section.page_width = new_width
+        section.page_height = new_height
+        section.orientation = WD_ORIENT.LANDSCAPE
+        # '03' orders blank page after the directions sheets
+        filename = Map + " 03 " + "blank page.docx"
+        fullpath_filename = os.path.join(__ROOT_DIR, panel_folder, 'Directions', filename)
+        document.save(fullpath_filename)
+        print("Blank .docx '{0}' was created".format(fullpath_filename))
 
 def covx_to_pdf(in_file, out_file):
-    """Convert a Word .docx to PDF"""
+    """
+    Convert a Word .docx to PDF
+    Requires the name of the input Word .docx and the name of the output PDF
+    """
     wdFormatPDF = 17
     word = comtypes.client.CreateObject('Word.Application')
+    # Keep the program hidden while running in the background
     word.Visible = False
     doc = word.Documents.Open(in_file)
+    # add a 7 second delay so that the program doesn't crash
     time.sleep(7)
     doc.SaveAs(out_file, FileFormat = wdFormatPDF)
     doc.Close()
     word.Quit()
 
-# DOES NOT WORK
-def remove_empty_pdf_page(panel_folder, filename, page):
-    input_file = os.path.join(__ROOT_DIR, panel_folder, 'Directions', filename)
-    print(input_file)
-    output_file = input_file
-    print(output_file)
-    file_handle = fitz.open(input_file)
-    file_handle.delete_page(page)
-    file_handle.save(output_file)
-    print('worked')
+def pdf_delete_page(panel_folder, filename, page_to_delete):
+    ''' 
+    Deletes a single page from a PDF
+    e.g. page_to_delete = 1
+    The page associated with the number is deleted in the specified PDF. indexing starts from 1 so if we pass 1 as an argument the second page will be deleted.
+    '''
+    folder_path = os.path.join(__ROOT_DIR, panel_folder, 'Directions')
+    input_file = os.path.join(folder_path, filename)
+    root_ext = os.path.splitext(filename)
+    root = root_ext[0]
+    new_filename = root + " update" + '.pdf'
+    output_file = os.path.join(folder_path, new_filename)
+    # try/except will skip if the page has already been deleted
+    try:
+        file_handle = fitz.open(input_file)
+        file_handle.delete_page(page_to_delete)
+        file_handle.save(output_file)
+        file_handle.close()
+        os.remove(input_file)
+    except:
+        print("Did not find page to delete in '{0}'").format(input_file)
 
-## Create a docx template for the word document downloaded earlier.
-#template = DocxTemplate(template_path)
+# Set the imported docx as the template
+template = DocxTemplate(template_path)
 
-## Create dataframes for Areas and Plots using __XCEL_LIBRARY
-#df_areas = pd.read_excel(__XCEL_LIBRARY, sheet_name='Areas Python')
-#df_plots = pd.read_excel(__XCEL_LIBRARY, sheet_name='Plots', na_filter = False)
+# Create dataframes for Areas and Plots using the imported spreadsheet
+df_areas = pd.read_excel(__XCEL_LIBRARY, sheet_name='Areas Python')
+df_plots = pd.read_excel(__XCEL_LIBRARY, sheet_name='Plots', na_filter = False)
 
-#panel_list = 'Panel_1', 'Panel_2', 'Panel_3', 'Panel_4'
+# Create a list with the four panel folders to loop over
+panel_list = 'Panel_1', 'Panel_2', 'Panel_3', 'Panel_4'
 
-## Clear directions folder
-#for panel in panel_list:
-#    Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Directions'))
+# Remove all old files from the directions folder
+for panel in panel_list:
+    Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Directions'))
 
-## Loop over rows in the Areas dataframe to create the directions documents
-#plots_list = []
-#for index, row in df_areas.iterrows():
-#    if row['Panel_Folder'] == 'Panel_1':
-#        # Display '0' cells as blank
-#        Area = row['Area']
-#        Panel = row['Panel']
-#        Map = row['Map']
-#        if row['Area Warnings'] == 0:
-#            Area_Warnings = ""
-#        else: 
-#            Area_Warnings = row['Area Warnings']
-#        # This is a dictionary with the first 3 keys matching columns in the Area dataframe. This will fill out the Area portion of the template.
-#        to_fill_in_area = {
-#            'Map': Map,
-#            'Area': Area,
-#            'Area_Directions': row['Area Directions'],
-#            'Area_Warnings': Area_Warnings,
-#            # The next keys refill the Plots input parameters (they are erased by the first render function)
-#            'Plot': '{{Plot_Name}}',
-#            'Plot_Directions': '{{Plot_Directions}}',
-#            'Warnings': '{{Warnings}}',
-#            'Keys': '{{Keys}}',
-#            }
-#        # Use the render function to fill in the word template based on the dictionary created.
-#        template.render(to_fill_in_area)
-#        filename = Map + ' 02 ' + row['Area'] + '.docx'
-#        #filename = str(to_fill_in_area['Area']) + ' Directions.docx'
-#        filled_path = os.path.join(__ROOT_DIR, row['Panel_Folder'], 'Directions', filename)
-#        # save the created template on the specified path
-#        template.save(filled_path)
-#        print("Created %s" % str(to_fill_in_area['Area']))
-#        # Loop over rows in the Plots dataframe to populate the directions documents
-#        for index, row in df_plots.iterrows():
-#            # Set the template to the document just created
-#            filled_template = DocxTemplate(filled_path)
-#            # Only populate document if the plot matches the area and map
-#            if (row['Area'] == Area) & (row['Panel'] == Panel) & (row['Map'] == Map):
-#                # This is a dictionary with the keys matching columns in the Plots dataframe
-#                to_fill_in_plot = {
-#                    'Plot_Name': row['Plot Name'],
-#                    'Plot_Directions': row['Plot Directions'],
-#                    'Warnings': row['Plot Warnings'],
-#                    'Keys': row['Keys'],
-#                    'Map_N': row['Map #']
-#                    }
-#                plots_list.append(row['Plot Name'])
-#                filled_template.render(to_fill_in_plot)
-#                # Create a new row in the Plots table to be filled out in the next itteration
-#                table = filled_template.tables[0]
-#                row = table.add_row().cells
-#                row[0].text = '{{Plot_Name}}'
-#                row[1].text = '{{Plot_Directions}}'
-#                row[2].text = '{{Warnings}}'
-#                row[3].text = '{{Keys}}'
-#                filled_template.save(filled_path)
-#            #Delete input parameters that were left empty
-#            to_fill_in = {}
-#        filled_template.render(to_fill_in)
-#        filled_template.save(filled_path)
-#        print("Populated %s" % str(to_fill_in_area['Area']))
-#len(plots_list)
+# Create empty list to populate with plots
+plots_list = []
 
-### Create blank documents as needed
-##Map1 = 
+# Loop over rows in the Areas dataframe to create directions Word docx
+for index, row in df_areas.iterrows():
+    Area = row['Area']
+    Panel = row['Panel']
+    Map = row['Map']
+    # Display '0' cells as blank
+    if row['Area Warnings'] == 0:
+        Area_Warnings = ""
+    else: 
+        Area_Warnings = row['Area Warnings']
+    # This is a dictionary with the first 3 keys matching columns in the Area dataframe. This will fill out the Area portion of the template.
+    to_fill_in_area = {
+        'Map': Map,
+        'Area': Area,
+        'Area_Directions': row['Area Directions'],
+        'Area_Warnings': Area_Warnings,
+        # The next keys refill the Plots input parameters (they are erased by the first render function)
+        'Plot': '{{Plot_Name}}',
+        'Plot_Directions': '{{Plot_Directions}}',
+        'Warnings': '{{Warnings}}',
+        'Keys': '{{Keys}}',
+        }
+    # Use the render function to fill in the word template based on the dictionary created.
+    template.render(to_fill_in_area)
+    # '02' orders directions sheets after the map
+    filename = Map + " 02 " + Area + '.docx'
+    filled_path = os.path.join(__ROOT_DIR, row['Panel_Folder'], 'Directions', filename)
+    # save the created template on the filled path
+    template.save(filled_path)
+    print("Created %s" % str(to_fill_in_area['Area']))
+    # Loop over rows in the Plots dataframe to populate the docx
+    for index, row in df_plots.iterrows():
+        # Change the template to the docx just created
+        filled_template = DocxTemplate(filled_path)
+        # Only populate docx if the area, panel, and map matches
+        if (row['Area'] == Area) & (row['Panel'] == Panel) & (row['Map'] == Map):
+            # This is a dictionary with the keys matching columns in the Plots dataframe
+            to_fill_in_plot = {
+                'Plot_Name': row['Plot Name'],
+                'Plot_Directions': row['Plot Directions'],
+                'Warnings': row['Plot Warnings'],
+                'Keys': row['Keys'],
+                }
+            plots_list.append(row['Plot Name'])
+            filled_template.render(to_fill_in_plot)
+            # Create a new row in the Plots table to be filled out in the next itteration
+            table = filled_template.tables[0]
+            row = table.add_row().cells
+            row[0].text = '{{Plot_Name}}'
+            row[1].text = '{{Plot_Directions}}'
+            row[2].text = '{{Warnings}}'
+            row[3].text = '{{Keys}}'
+            filled_template.save(filled_path)
+        # Delete input parameters that were left empty
+        to_fill_in = {}
+    filled_template.render(to_fill_in)
+    filled_template.save(filled_path)
+    print("Populated %s" % str(to_fill_in_area['Area']))
+# Double check that these two numbers are the same
+print("Number of plots expected: ", df_plots.shape[0])
+print("Number of plots actually populated ", len(plots_list))
 
-##Loop over the panel folders to convert docx to pdf
-#for panel in panel_list:
-#    folder_path = os.path.join(__ROOT_DIR, panel, 'Directions')
-#    for filename in os.listdir(folder_path):
-#        if filename.endswith('.docx'):
-#            # Full path of the docx
-#            in_file = os.path.join(folder_path, filename)
-#            # Name of the output pdf
-#            out_filename = filename.replace('.docx', '.pdf')
-#            # Full path of the output pdf
-#            out_file = os.path.join(folder_path, out_filename)
-#            # Create an empty PDF
-#            canvas = Canvas(out_file)
-#            # Populate the pdf with the specified docx
-#            covx_to_pdf(in_file, out_file)
-#            print("Success: {0} was converted to PDF".format(filename))
+# Create blank docx to go behind map
+# Need to run for maps that have an even number of directions sheets (2, 4, etc.)
+# Panel 1
+Map_List_1 = 'CHOH 4 (Point of Rocks)', 
+'CHOH 5 and HAFE', 
+'GWMP (Mt Vernon) and NACE South (FOWA, PISC)', 
+'MONO', 
+'NACE (ANAC, FODU)'
 
-# Remove empty pages from pdf
-remove_empty_pdf_page('Panel_1', 'PRWI 02 PRWI.pdf', 2)
+create_blank_docx('Panel_1', Map_List_1)
+# Panel 2
+# Panel 3
+# Panel 4
+
+# Loop over the panel folders to convert docx to pdf
+for panel in panel_list:
+    folder_path = os.path.join(__ROOT_DIR, panel, 'Directions')
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.docx'):
+            # Full path of the docx
+            in_file = os.path.join(folder_path, filename)
+            # Name of the output pdf
+            out_filename = filename.replace('.docx', '.pdf')
+            # Full path of the output pdf
+            out_file = os.path.join(folder_path, out_filename)
+            # Create an empty PDF
+            canvas = Canvas(out_file)
+            # Populate the pdf with the docx
+            covx_to_pdf(in_file, out_file)
+            print("{0} was converted to PDF".format(filename))
+
+# Remove empty pages at the end of PDFs
+pdf_delete_page('Panel_1', 'PRWI 02 PRWI.pdf', 1)
+
+
+
