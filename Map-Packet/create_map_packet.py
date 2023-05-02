@@ -58,13 +58,14 @@ def add_map_suffix(map_folder_path):
         # Skip if already has '01'
         if filename.endswith('01.pdf'):
             pass
-        elif filename.endswith('.pdf'):
-            src = os.path.join(map_folder_path, filename)
-            root_ext = os.path.splitext(filename)
-            root = root_ext[0]
-            new_filename = root + ' 01' + '.pdf'
-            dst = os.path.join(map_folder_path, new_filename)
-            os.rename(src, dst)
+        else:
+            if filename.endswith('.pdf'):
+                src = os.path.join(map_folder_path, filename)
+                root_ext = os.path.splitext(filename)
+                root = root_ext[0]
+                new_filename = root + ' 01' + '.pdf'
+                dst = os.path.join(map_folder_path, new_filename)
+                os.rename(src, dst)
 
 def create_pdf_list(pdf_folder_path, pdf_list_name):
     """
@@ -101,25 +102,14 @@ def copy_paste_files(source_folder, destination_folder):
         # only PDFs are copied
         if filename.endswith('.pdf'):
             shutil.copy(source, destination)
-            print('copied', filename)
 
-# Create a list with the four panel folders to loop over
-panel_list = 'Panel_1', 'Panel_2', 'Panel_3', 'Panel_4'
-
-for panel in panel_list:
-
-
-# copy landscape maps to main maps folder
-folder_maps_land_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps', 'Landscape')
-folder_maps_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps')
-copy_paste_files(folder_maps_land_panel1, folder_maps_panel1)
-
-# convert maps in portrait folder to landscape and copy to main maps folder
-
-def pdf_port_to_land(portrait_maps_folder, maps_folder):
-    for filename in os.listdir(portrait_maps_folder):
-        input_fullpath_filename = os.path.join(portrait_maps_folder, filename)
-        output_fullpath_filename = os.path.join(maps_folder, filename)
+def pdf_port_to_land(portrait_folder, new_folder):
+    # takes a folder of PDFs with portrait orientation
+    # function rotates all PDFs to landscape orientation
+    # Exports to a new folder
+    for filename in os.listdir(portrait_folder):
+        input_fullpath_filename = os.path.join(portrait_folder, filename)
+        output_fullpath_filename = os.path.join(new_folder, filename)
         pdf_in = open(input_fullpath_filename, 'rb')
         pdf_reader = PyPDF2.PdfFileReader(pdf_in)
         pdf_writer = PyPDF2.PdfFileWriter()
@@ -132,22 +122,10 @@ def pdf_port_to_land(portrait_maps_folder, maps_folder):
                 page.rotateCounterClockwise(90)
                 numrotated = numrotated + 1
             pdf_writer.addPage(page)
-        print(str(numrotated) + " of " + str(numofpages) + " pages were rotated")
         pdf_out = open(output_fullpath_filename, 'wb')
         pdf_writer.write(pdf_out)
         pdf_out.close()
         pdf_in.close()
-
-
-folder_maps_port_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps', 'Portrait')
-pdf_port_to_land(folder_maps_port_panel1, folder_maps_panel1)
-
-
-
-add_map_suffix(folder_maps_panel1)
-
-# Clear maps/directions folder
-Clear_Folder(os.path.join(__ROOT_DIR, 'Panel_1', 'Maps_Directions_Combined'))
 
 # Set the folder path to the Legend pdf
 folder_legend = os.path.join(__ROOT_DIR, 'Legend')
@@ -155,38 +133,51 @@ folder_legend = os.path.join(__ROOT_DIR, 'Legend')
 pdfiles_legend = []
 create_pdf_list(folder_legend, pdfiles_legend)
 
-# Eventually refactor so that it is a loop
-#for panel in panel_list = 
+# Create a list with the four panel folders to loop over
+panel_list = 'Panel_1', 'Panel_2', 'Panel_3', 'Panel_4'
 
-# Create the Panel 1 packet
-# Set the folder path to the Cover page pdf
-folder_cover_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Cover')
-# Create a list to populate with the Cover page pdf
-pdfiles_cover_panel1 = []
-create_pdf_list(folder_cover_panel1, pdfiles_cover_panel1)
-
-# Set the folder path to the Overview map pdf
-folder_overview_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Overview')
-# Create a list to populate with the Overview map pdf
-pdfiles_overvew_panel1 = []
-create_pdf_list(folder_overview_panel1, pdfiles_overvew_panel1)
-
-folder_directions_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Directions')
-folder_maps_directions_panel1 = os.path.join(__ROOT_DIR, 'Panel_1', 'Maps_Directions_Combined')
-
-copy_paste_files(folder_maps_panel1, folder_maps_directions_panel1)
-copy_paste_files(folder_directions_panel1, folder_maps_directions_panel1)
-
-# Create a list to populate with the Maps and Directions
-pdfiles_maps_directions_panel1 = []
-create_pdf_list(folder_maps_directions_panel1, pdfiles_maps_directions_panel1)
-# Sort ABC
-pdfiles_maps_directions_panel1.sort(key = str.lower)
-
-# Create a giant list with everything you want to include in the merged PDF
-pdfiles_panel1 = pdfiles_cover_panel1 + pdfiles_overvew_panel1 + pdfiles_maps_directions_panel1 + pdfiles_legend
-packet1 = 'Packet_Panel_1.pdf'
-merge_pdfs(pdfiles_panel1, packet1)
-print("{0} was created".format(packet1))
+for panel in panel_list:
+    print("Creating packet for {0}...".format(panel))
+    # Set the folder path to the Cover page pdf
+    folder_cover = os.path.join(__ROOT_DIR, panel, 'Cover')
+    # Create a list to populate with the Cover page pdf
+    pdfiles_cover = []
+    create_pdf_list(folder_cover, pdfiles_cover)
+    # Set the folder path to the Overview map pdf
+    folder_overview = os.path.join(__ROOT_DIR, panel, 'Overview')
+    # Create a list to populate with the Overview map pdf
+    pdfiles_overview = []
+    create_pdf_list(folder_overview, pdfiles_overview)
+    # Clear old files from the Maps folder
+    folder_maps = os.path.join(__ROOT_DIR, panel, 'Maps')
+    Clear_Folder(folder_maps)
+    # copy landscape map pdfs to Maps folder
+    folder_maps_land = os.path.join(__ROOT_DIR, panel, 'Maps', 'Landscape')
+    copy_paste_files(folder_maps_land, folder_maps)
+    # rotate portrait pdf maps to landscape and copy to Maps folder
+    folder_maps_port = os.path.join(__ROOT_DIR, panel, 'Maps', 'Portrait')
+    pdf_port_to_land(folder_maps_port, folder_maps)
+    # add '01' suffix to pdfs in the Maps folder
+    add_map_suffix(folder_maps)
+    # Set the folder path to the Maps/Directions folder
+    folder_maps_directions = os.path.join(__ROOT_DIR, panel, 'Maps_Directions_Combined')
+    # Clear old files from the Maps/Directions folder
+    Clear_Folder(folder_maps_directions)  
+    # Copy map pdfs to the Maps/Directions folder
+    copy_paste_files(folder_maps, folder_maps_directions)
+    # Set the folder path to the Directions pdfs
+    folder_directions = os.path.join(__ROOT_DIR, panel, 'Directions')
+    # Copy directions pdfs to the Maps/Directions folder
+    copy_paste_files(folder_directions, folder_maps_directions)
+    # Create a list to populate with the Maps and Directions
+    pdfiles_maps_directions = []
+    create_pdf_list(folder_maps_directions, pdfiles_maps_directions)
+    # Sort ABC
+    pdfiles_maps_directions.sort(key = str.lower)
+    # Create a giant list with everything to include in the merged PDF
+    pdfiles_packet = pdfiles_cover + pdfiles_overview + pdfiles_maps_directions + pdfiles_legend
+    filename = 'Packet_' + panel + '.pdf'
+    merge_pdfs(pdfiles_packet, filename)
+    print("{0} was created".format(filename))
 
                         

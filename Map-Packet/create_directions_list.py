@@ -27,11 +27,13 @@ References:
 
 # Import statements for utilized libraries / packages
 from cmath import nan
+from logging import exception
 from tkinter.tix import ROW
 from openpyxl import load_workbook
 from docx import Document
 from docx.enum.section import WD_ORIENT
 from docxtpl import DocxTemplate
+from docx.shared import RGBColor
 import pandas as pd
 import sys
 from reportlab.pdfgen.canvas import Canvas
@@ -63,7 +65,7 @@ def Clear_Folder(folder_path):
             try:
                 os.remove(fullpath_filename)
             except:
-                pass
+                print("ERROR CLEARING DIRECTIONS FOLDERS! Word may be running in the background and using the files. RESTART COMPUTER AND TRY AGAIN...")
 
 def create_blank_docx(panel_folder, Map_List):
     """
@@ -84,7 +86,6 @@ def create_blank_docx(panel_folder, Map_List):
         filename = Map + " 03 " + "blank page.docx"
         fullpath_filename = os.path.join(__ROOT_DIR, panel_folder, 'Directions', filename)
         document.save(fullpath_filename)
-        print("Blank .docx '{0}' was created".format(fullpath_filename))
 
 def covx_to_pdf(in_file, out_file):
     """
@@ -122,7 +123,7 @@ def pdf_delete_page(panel_folder, filename, page_to_delete):
         file_handle.close()
         os.remove(input_file)
     except:
-        print("Did not find page to delete in '{0}'").format(input_file)
+        pass
 
 # Set the imported docx as the template
 template = DocxTemplate(template_path)
@@ -139,9 +140,10 @@ for panel in panel_list:
     Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Directions'))
 
 # Create empty list to populate with plots
-plots_list = []
+plots_populated_list = []
 
 # Loop over rows in the Areas dataframe to create directions Word docx
+print("Creating Directions docx...")
 for index, row in df_areas.iterrows():
     Area = row['Area']
     Panel = row['Panel']
@@ -169,56 +171,72 @@ for index, row in df_areas.iterrows():
     filename = Map + " 02 " + Area + '.docx'
     filled_path = os.path.join(__ROOT_DIR, row['Panel_Folder'], 'Directions', filename)
     # save the created template on the filled path
-    template.save(filled_path)
-    print("Created %s" % str(to_fill_in_area['Area']))
-    # Loop over rows in the Plots dataframe to populate the docx
-    for index, row in df_plots.iterrows():
-        # Change the template to the docx just created
-        filled_template = DocxTemplate(filled_path)
-        # Only populate docx if the area, panel, and map matches
-        if (row['Area'] == Area) & (row['Panel'] == Panel) & (row['Map'] == Map):
-            # This is a dictionary with the keys matching columns in the Plots dataframe
-            to_fill_in_plot = {
-                'Plot_Name': row['Plot Name'],
-                'Plot_Directions': row['Plot Directions'],
-                'Warnings': row['Plot Warnings'],
-                'Keys': row['Keys'],
-                }
-            plots_list.append(row['Plot Name'])
-            filled_template.render(to_fill_in_plot)
-            # Create a new row in the Plots table to be filled out in the next itteration
-            table = filled_template.tables[0]
-            row = table.add_row().cells
-            row[0].text = '{{Plot_Name}}'
-            row[1].text = '{{Plot_Directions}}'
-            row[2].text = '{{Warnings}}'
-            row[3].text = '{{Keys}}'
-            filled_template.save(filled_path)
-        # Delete input parameters that were left empty
-        to_fill_in = {}
-    filled_template.render(to_fill_in)
-    filled_template.save(filled_path)
-    print("Populated %s" % str(to_fill_in_area['Area']))
-# Double check that these two numbers are the same
-print("Number of plots expected: ", df_plots.shape[0])
-print("Number of plots actually populated ", len(plots_list))
+    try:
+        template.save(filled_path)
+        # Loop over rows in the Plots dataframe to populate the docx
+        for index, row in df_plots.iterrows():
+            # Change the template to the docx just created
+            filled_template = DocxTemplate(filled_path)
+            # Only populate docx if the area, panel, and map matches
+            if (row['Area'] == Area) & (row['Panel'] == Panel) & (row['Map'] == Map):
+                # This is a dictionary with the keys matching columns in the Plots dataframe
+                to_fill_in_plot = {
+                    'Plot_Name': row['Plot Name'],
+                    'Plot_Directions': row['Plot Directions'],
+                    'Warnings': row['Plot Warnings'],
+                    'Keys': row['Keys'],
+                    }
+                plots_populated_list.append(row['Plot Name'])
+                filled_template.render(to_fill_in_plot)
+                # Create a new row in the Plots table to be filled out in the next itteration
+                table = filled_template.tables[0]
+                row = table.add_row().cells
+                row[0].text = '{{Plot_Name}}'
+                row[1].text = '{{Plot_Directions}}'
+                row[2].text = '{{Warnings}}'
+                # Add red font to plot warnings
+                warnings_paragraph = row[2].paragraphs[0]
+                warnings_run = warnings_paragraph.runs
+                warnings_font = warnings_run[0].font
+                warnings_font.color.rgb = RGBColor.from_string('FF0000')
+                row[3].text = '{{Keys}}'
+                filled_template.save(filled_path)
+            # Delete input parameters that were left empty
+            to_fill_in = {}
+        filled_template.render(to_fill_in)
+        filled_template.save(filled_path)
+    except:
+        print("ERROR CREATING '{0}' in {1}".format(filename, panel))
+    
+# Identify plots that weren't added to a directions sheet
+plots_expected_df = df_plots['Plot Name']
+plots_expected_list = plots_expected_df.values.tolist()
+
+set_difference = set(plots_expected_list) - set(plots_populated_list)
+list_difference_result = list(set_difference)
+print("Plots not added to Directions: ", list_difference_result)
 
 # Create blank docx to go behind map
 # Need to run for maps that have an even number of directions sheets (2, 4, etc.)
 # Panel 1
-Map_List_1 = 'CHOH 4 (Point of Rocks)', 
-'CHOH 5 and HAFE', 
-'GWMP (Mt Vernon) and NACE South (FOWA, PISC)', 
-'MONO', 
-'NACE (ANAC, FODU)'
+Blank_Pages_1 = "CHOH 4 (Point of Rocks)", "CHOH 5 and HAFE", "GWMP (Mt Vernon) and NACE South (FOWA, PISC)", "MONO", "NACE (ANAC, FODU)"
+create_blank_docx('Panel_1', Blank_Pages_1)
 
-create_blank_docx('Panel_1', Map_List_1)
 # Panel 2
+Blank_Pages_2 = "CATO", "CHOH 2 and GWMP (GRFA)", "CHOH 5 and HAFE", "CHOH 9 (Far West - Paw Paw Tunnel)", "GWMP (Daingerfield) and NACE (Shepherd Parkway)", "MONO", "NACE (FODU, SUIT)"
+create_blank_docx('Panel_2', Blank_Pages_2)
+
 # Panel 3
+Blank_Pages_3 = "CATO", "CHOH 1, 2 and GWMP (GRFA, Turkey Run)", "CHOH 10 (Far West - Oldtown, Spring Gap)", "CHOH 5 and HAFE", "GWMP (Mt Vernon) and NACE South (PISC)", "MONO", "NACE (BAWA, GREE)", "PRWI"
+create_blank_docx('Panel_3', Blank_Pages_3)
+
 # Panel 4
+Blank_Pages_4 = "ANTI and CHOH 6 (Snyders Landing)", "CHOH 2 and GWMP (Turkey Run)", "CHOH 3 (Violettes Lock) and GWMP (GRFA)", "CHOH 5 and HAFE"
+create_blank_docx('Panel_4', Blank_Pages_4)
 
 # Loop over the panel folders to convert docx to pdf
 for panel in panel_list:
+    print("Converting {0} Directions docx to pdf...".format(panel))
     folder_path = os.path.join(__ROOT_DIR, panel, 'Directions')
     for filename in os.listdir(folder_path):
         if filename.endswith('.docx'):
@@ -231,11 +249,13 @@ for panel in panel_list:
             # Create an empty PDF
             canvas = Canvas(out_file)
             # Populate the pdf with the docx
-            covx_to_pdf(in_file, out_file)
-            print("{0} was converted to PDF".format(filename))
+            try:
+                covx_to_pdf(in_file, out_file)
+            except:
+                print("ERROR CONVERTING {0} TO PDF".format(in_file))
 
 # Remove empty pages at the end of PDFs
-pdf_delete_page('Panel_1', 'PRWI 02 PRWI.pdf', 1)
+pdf_delete_page('Panel_1', "PRWI 02 PRWI.pdf", 1)
 
 
 
