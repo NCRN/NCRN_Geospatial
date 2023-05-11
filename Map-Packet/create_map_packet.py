@@ -29,6 +29,7 @@ References:
 """
 
 # Import statements for utilized libraries / packages
+from sqlite3 import paramstyle
 import PyPDF2
 import os
 import shutil
@@ -36,8 +37,11 @@ from cmath import nan
 from logging import exception
 from tkinter.tix import ROW
 from openpyxl import load_workbook
+import aspose.words as aw
+import aspose.pydrawing as drawing
 import docx
 from docx import Document
+from docx.shared import Pt
 from docx.enum.section import WD_ORIENT
 from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from docxtpl import DocxTemplate
@@ -131,35 +135,6 @@ def pdf_delete_page(panel_folder, filename, page_to_delete):
         os.remove(input_file)
     except:
         pass
-
-def add_hyperlink(paragraph, text, url):
-    # This gets access to the document.xml.rels file and gets a new relation id value
-    part = paragraph.part
-    r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
-
-    # Create the w:hyperlink tag and add needed values
-    hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
-    hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
-
-    # Create a w:r element and a new w:rPr element
-    new_run = docx.oxml.shared.OxmlElement('w:r')
-    rPr = docx.oxml.shared.OxmlElement('w:rPr')
-
-    # Join all the xml elements together add add the required text to the w:r element
-    new_run.append(rPr)
-    new_run.text = text
-    hyperlink.append(new_run)
-
-    # Create a new Run object and add the hyperlink into it
-    r = paragraph.add_run ()
-    r._r.append (hyperlink)
-
-    # A workaround for the lack of a hyperlink style (doesn't go purple after using the link)
-    # Delete this if using a template that has the hyperlink style in it
-    r.font.color.theme_color = MSO_THEME_COLOR_INDEX.HYPERLINK
-    r.font.underline = True
-
-    return hyperlink
 
 def add_map_suffix(map_folder_path):
     """
@@ -384,46 +359,144 @@ plots_populated_appendix_list = []
 # Loop over rows in the Plots dataframe to create Appendix Word docx
 print("Creating Appendix docx...")
 
+#for panel in panel_list:
+#    filled_path = os.path.join(__ROOT_DIR, panel, 'Appendix', 'Appendix.docx')
+#    shutil.copyfile(appendix_template_path, filled_path)
+#    # Set the Appendix docx as the template
+#    appendix_template = DocxTemplate(filled_path)
+#    try:
+#        for index, row in df_plots.iterrows():
+#            Panel_Folder = row["Panel Folder"]
+#            if Panel_Folder == panel:
+#                # This is a dictionary with the keys matching columns in the Plots dataframe. This will fill out the table in the Appendix template.
+#                to_fill_in = {
+#                    'Plot_Name': row["Plot Name"],
+#                    'Parking_Lat_Long': row["Parking Lat, Long"],
+#                    'Plot_Lat_Long': row["Plot Lat, Long"],
+#                    'Map_Number': row["Map #"]
+#                    }
+#                # Use the render function to fill in the word template based on the dictionary created.
+#                appendix_template.render(to_fill_in)
+#                plots_populated_appendix_list.append(row['Plot Name'])      
+#                # Add hyperlink to first cell
+#                # Create a new row in the Plots table to be filled out in the next itteration
+#                table = appendix_template.tables[0]
+#                row = table.add_row().cells
+#                row[0].text = "{{Plot_Name}}"
+#                row[1].text = "{{Parking_Lat_Long}}"
+#                row[2].text = "{{Plot_Lat_Long}}"
+#                row[3].text = "{{Map_Number}}"
+#                # save the created template on the filled path
+#                appendix_template.save(filled_path)
+#            # Delete input parameters that were left empty
+#            to_fill_in_empty = {}
+#        appendix_template.render(to_fill_in_empty)
+#        appendix_template.save(filled_path)
+#    except:
+#        print("ERROR CREATING Appendix in {0}".format(Panel_Folder))
+
+def add_hyperlink(paragraph, url, text, color):
+
+    # This gets access to the document.xml.rels file and gets a new relation id value
+    part = paragraph.part
+    r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+
+    # Create the w:hyperlink tag and add needed values
+    hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
+    hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
+
+    # Create a w:r element
+    new_run = docx.oxml.shared.OxmlElement('w:r')
+    rPr = docx.oxml.shared.OxmlElement('w:rPr')
+
+    # Join all the xml elements together add add the required text to the w:r element
+    new_run.append(rPr)
+    new_run.text = text
+    hyperlink.append(new_run)
+
+    # Create a new Run object and add the hyperlink into it
+    r = paragraph.add_run ()
+    r._r.append (hyperlink)
+
+    # A workaround for the lack of a hyperlink style (doesn't go purple after using the link)
+    # Delete this if using a template that has the hyperlink style in it
+    r.font.color.theme_color = MSO_THEME_COLOR_INDEX.HYPERLINK
+    r.font.underline = True
+
+
+    # 0,122,194
+
+    # # Join all the xml elements together add add the required text to the w:r element
+    # new_run.append(rPr)
+    # new_run.text = text
+    # hyperlink.append(new_run)
+
+    # paragraph._p.append(hyperlink)
+
+    return hyperlink
+
+
 for panel in panel_list:
     filled_path = os.path.join(__ROOT_DIR, panel, 'Appendix', 'Appendix.docx')
     shutil.copyfile(appendix_template_path, filled_path)
     # Set the Appendix docx as the template
-    appendix_template = DocxTemplate(filled_path)
-    try:
-        for index, row in df_plots.iterrows():
-            Panel_Folder = row["Panel Folder"]
-            if Panel_Folder == panel:
-                # This is a dictionary with the keys matching columns in the Plots dataframe. This will fill out the table in the Appendix template.
-                to_fill_in = {
-                    'Plot_Name': row["Plot Name"],
-                    'Parking_Lat_Long': row["Parking Lat, Long"],
-                    'Plot_Lat_Long': row["Plot Lat, Long"],
-                    'Map_Number': row["Map #"]
-                    }
-                # Use the render function to fill in the word template based on the dictionary created.
-                appendix_template.render(to_fill_in)
-                plots_populated_appendix_list.append(row['Plot Name'])
-                # Create a new row in the Plots table to be filled out in the next itteration
-                table = appendix_template.tables[0]
-                row = table.add_row().cells
-                row[0].text = "{{Plot_Name}}"
-                row[1].text = "{{Parking_Lat_Long}}"
-                row[2].text = "{{Plot_Lat_Long}}"
-                row[3].text = "{{Map_Number}}"
-                # save the created template on the filled path
-                appendix_template.save(filled_path)
-            # Delete input parameters that were left empty
-            to_fill_in_empty = {}
-        appendix_template.render(to_fill_in_empty)
-        appendix_template.save(filled_path)
-    except:
-        print("ERROR CREATING Appendix in {0}".format(Panel_Folder))
+    #try:
+    for index, row in df_plots.iterrows():
+        Panel_Folder = row["Panel Folder"]
+        if Panel_Folder == panel:
+            # This is a dictionary with the keys matching columns in the Plots dataframe. This will fill out the table in the Appendix template.
+            plots_populated_appendix_list.append(row['Plot Name'])      
+            # Add hyperlink to first cell
+            # Create a new row in the Plots table to be filled out in the next itteration
+            appendix_template = DocxTemplate(filled_path)            
+            to_fill_in = {
+                'Plot_Name': row["Plot Name"],
+                'Parking_Lat_Long': row["Parking Lat, Long"],
+                'Plot_Lat_Long': row["Plot Lat, Long"],
+                'Map_Number': row["Map #"]
+                }
+            # Use the render function to fill in the word template based on the dictionary created.
+            appendix_template.render(to_fill_in)            
+            table = appendix_template.tables[0]
 
-print(plots_populated_appendix_list)
+            row_cells = table.add_row().cells
+
+            p_table = row_cells[0].add_paragraph()
+            
+            hyperlink = add_hyperlink(p_table, row["Parking Location (Google)"], row["Plot Name"], '#0000FF')
+           
+
+
+
+            row_cells[1].text = "{{Parking_Lat_Long}}"
+            row_cells[2].text = "{{Plot_Lat_Long}}"
+            row_cells[3].text = "{{Map_Number}}"
+
+            # save the created template on the filled path
+            appendix_template.save(filled_path)
+            to_fill_in = {
+                'Parking_Lat_Long': row["Parking Lat, Long"],
+                'Plot_Lat_Long': row["Plot Lat, Long"],
+                'Map_Number': row["Map #"]
+                }
+            # Use the render function to fill in the word template based on the dictionary created.
+            appendix_template.render(to_fill_in)
+        # Delete input parameters that were left empty
+        to_fill_in_empty = {}
+    appendix_template.render(to_fill_in_empty)
+    appendix_template.save(filled_path)
+    #except:
+    #    print("ERROR CREATING Appendix in {0}".format(Panel_Folder))
+
+
+
 
 set_difference_2 = set(plots_expected_list) - set(plots_populated_appendix_list)
 list_difference_result_2 = list(set_difference_2)
 print("Plots not added to Appendix: ", list_difference_result_2)
+
+
+
 
 ## Set the folder path to the Legend pdf
 #folder_legend = os.path.join(__ROOT_DIR, 'Legend')
