@@ -251,26 +251,32 @@ plots_populated_appendix_list = []
 
 # Prepare folders and move files to the correct locations
 for panel in panel_list:
-    # Clear old files
-    # Directions pdfs
+    ## Clear old files
+    ## Directions pdfs
     Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Directions'))
     # Directions word docx
     Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Directions', 'Working'))
-    # maps working
+    ## maps working
     folder_maps_working = os.path.join(__ROOT_DIR, panel, 'Maps', 'Working')
     Clear_Folder(folder_maps_working)
-    # maps/directions
+    ## maps
+    folder_maps = os.path.join(__ROOT_DIR, panel, 'Maps')
+    Clear_Folder(folder_maps)
+    ## maps/directions
     folder_maps_directions = os.path.join(__ROOT_DIR, panel, 'Working')
     Clear_Folder(folder_maps_directions)
-    # Appendix
+    ## Appendix
     Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Appendix'))
     Clear_Folder(os.path.join(__ROOT_DIR, panel, 'Appendix', 'Working'))
 
-    # copy landscape map pdfs to maps working folder
+    # copy maps to main Maps folder. This is where they will be easy to view for in-field purposes.
+    folder_maps_port = os.path.join(folder_maps_working, 'Portrait')
     folder_maps_land = os.path.join(folder_maps_working, 'Landscape')
+    copy_paste_pdfs(folder_maps_port, folder_maps)
+    copy_paste_pdfs(folder_maps_land, folder_maps)
+    # copy landscape map pdfs to maps working folder
     copy_paste_pdfs(folder_maps_land, folder_maps_working)
     # rotate portrait pdf maps to landscape and copy to maps working folder
-    folder_maps_port = os.path.join(folder_maps_working, 'Portrait')
     pdf_port_to_land(folder_maps_port, folder_maps_working)
     # add '01' suffix to pdfs in the Maps folder
     add_map_suffix(folder_maps_working)
@@ -383,7 +389,7 @@ for panel in panel_list:
         elif ((panel == 'Panel_4') & (filename == "CATO 02 CATO.pdf")):
             pdf_delete_page(folder_directions, filename, 1)
     
-    ## Copy directions pdfs to the Maps/Directions folder
+    # Copy directions pdfs to the Maps/Directions folder
     folder_maps_directions = os.path.join(__ROOT_DIR, panel, 'Working')
     copy_paste_pdfs(folder_directions, folder_maps_directions)
 

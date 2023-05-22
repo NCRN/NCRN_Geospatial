@@ -32,11 +32,12 @@ print("### GETTING STARTED ###".format())
 
 """
 Set various global variables. Some of these could be parameterized to be used in an 
-ArcGIS Toolbox script and/or command line use. 
+ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 
-_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+#_WORKSPACE = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\GIS\Geodata\NCRN' ## Update this to be the directory where the geodatabase should be created. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+_WORKSPACE = r'C:\Users\goettel\Downloads' ## Update this to be the directory where the geodatabase should be created. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
@@ -119,8 +120,9 @@ create_fcs_dict = {1:[locations_pt,'POINT'],
                    7:[locations_logistics_py, 'POLYGON']}
 
 # Create all the feature classes
+# Enable Z values
 for k, v in create_fcs_dict.items():
-    arcpy.CreateFeatureclass_management(arcpy.env.workspace, v[0], v[1], '', 'DISABLED', 'DISABLED', sr)
+    arcpy.CreateFeatureclass_management(arcpy.env.workspace, v[0], v[1], '', 'DISABLED', 'ENABLED', sr)
     print("Done creating feature class: [{0}]".format(v[0]))
 
 # Create a list of fields to be added to monitoring locations
@@ -135,7 +137,7 @@ for index, row in df_monloc_fields.iterrows():
 
 # Create a list of fields to be added to monitoring locations data
 monlocdata_fields_list = []
-for index, row in df_monlocdata_fields.iterrows():
+for index, row in df_monlocdata_fields.iterrows():   
     if row['DataType'] == 'TEXT':
         field = [row['Field'], row['DataType'], '', '', row['Length'], row['Alias'], row['Nullable'], row['Required'], '']
         monlocdata_fields_list.append(field)
@@ -197,6 +199,11 @@ for fc in arcpy.ListFeatureClasses():
             if field.name == k:
                 arcpy.management.AssignDomainToField(fc, field.name, v)
                 print("Assigned [{0}] domain to: [{1}.{2}]".format(v, fc, field.name))
+
+## Enables editor tracking for all datasets in a geodatabase
+for fc in arcpy.ListFeatureClasses():
+    arcpy.EnableEditorTracking_management(fc,'CREATEUSER', 'CREATEDATE', 'EDITUSER', 'EDITDATE', 'NO_ADD_FIELDS', 'UTC')
+    print("Enabling tracking on feature class: [{0}]".format(fc[0]))
 
 # Set parameters for creating related tables
 primaryKey = 'FEATUREID'
