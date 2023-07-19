@@ -1,10 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Downloading",
-    "\\GIS-Directory-Template",
-    "\\GIS-Library"
+    "\\Data-Downloader",
+    "\\GIS-Library-Documenter",
+    "\\GOettelVSProject",
+    "\\Map-Packet",
+    "\\NCRN-Data-Standard-Create"
   ],
-  "SelectedNode": "\\Downloading\\downloadData_v4.py",
+  "SelectedNode": "\\NCRN-Data-Standard-Create\\create_ncrn_gis_standard.py",
   "PreviewInSolutionExplorer": false
 }
