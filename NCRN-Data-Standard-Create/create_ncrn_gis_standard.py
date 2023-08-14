@@ -41,7 +41,7 @@ _WORKSPACE = r'C:\Users\goettel\Downloads' ## Update this to be the directory wh
 
 __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
-in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
+in_gdb = r'NCRN_Monitoring_Locations_test.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Change the name of the feature dataset as needed
 
@@ -53,9 +53,9 @@ locations_pt = 'ECO_MonitoringLocations_pt'
 locations_data_pt = 'ECO_MonitoringLocationsData_pt'
 locations_data_ln = 'ECO_MonitoringLocationsData_ln'
 locations_data_py = 'ECO_MonitoringLocationsData_py'
-locations_logistics_pt = 'ECO_MonitoringLocationLogistics_pt'
-locations_logistics_ln = 'ECO_MonitoringLocationLogistics_ln'
-locations_logistics_py = 'ECO_MonitoringLocationLogistics_py'
+locations_logistics_pt = 'ECO_MonitoringLocationsLogistics_pt'
+locations_logistics_ln = 'ECO_MonitoringLocationsLogistics_ln'
+locations_logistics_py = 'ECO_MonitoringLocationsLogistics_py'
 
 ## Read excel into dataframes using Pandas
 df_domains = pd.read_excel(__XCEL_LIBRARY, sheet_name='domains')
