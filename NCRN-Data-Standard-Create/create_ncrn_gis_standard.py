@@ -41,7 +41,7 @@ _WORKSPACE = r'C:\Users\goettel\Downloads' ## Update this to be the directory wh
 
 __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Standard\NCRN-GIS-Data-Standard.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
-in_gdb = r'NCRN_Monitoring_Locations_test.gdb' ## Change the name of the geodatabase as needed
+in_gdb = r'NCRN_Monitoring_Locations.gdb' ## Change the name of the geodatabase as needed
 
 ds = r'IMD' ## Change the name of the feature dataset as needed
 

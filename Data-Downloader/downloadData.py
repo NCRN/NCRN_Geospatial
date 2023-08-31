@@ -55,7 +55,7 @@ Set various global variables. Some of these could be parameterized to be used in
 ArcGIS Toolbox script and/or command line use. 
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
-__ROOT_DIR = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+__ROOT_DIR = r'C:\Users\goettel\Downloads\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 __XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 # Specify the ArcGIS Online credentials to use.
@@ -259,9 +259,9 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                         print("Unzipped: {0}.\n".format(fullpath_filename))
                         ## delete zip file after extract
                         os.remove(fullpath_filename)
-Write_Date_to_Text_File(dest_dir)
+#Write_Date_to_Text_File(dest_dir)
 
-# Download feature service items from ArcGIS Online
+# Download activated feature service items from ArcGIS Online
 print("Downloading feature service items from ArcGIS Online...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if ((row['Status'] == 'AGOL') & (row['Activated'] == 'Yes')):
@@ -289,9 +289,9 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                 print("unzipped: {0}.\n".format(fullpath_filename))  
                 ## delete zip file after extract
                 os.remove(fullpath_filename) 
-Write_Date_to_Text_File(dest_dir)
+#Write_Date_to_Text_File(dest_dir)
 
-# Rename geodatabases as needed
+# Rename the specififed geodatabases
 print("Checking for geodatabases to rename...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if ((row['ID'] == 3) or (row['ID'] == 68) or (row['ID'] == 69)): ## Select geodatabases to rename using row ID
@@ -304,7 +304,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             arcpy.management.Rename(in_data, out_data, data_type)
             print("geodatabase renamed as: {0}".format(row['New GDB Name']))
 
-# Create new geodatabases as needed
+# Create the specified geodatabases
 print("Checking for new geodatabases to create...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     # Create geodatabase in parent folder (e.g. Open Street Map) 
@@ -326,7 +326,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             arcpy.CreateFileGDB_management(folder_path, row['New GDB Name'])
             print("Created geodatabase: {0}".format(row['New GDB Name']))
 
-# Merge feature classes as needed
+# Merge the specified feature classes
 print("Checking for feature classes to merge...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     # 4 feature classes to geodatabase in parent folder (e.g. Open Street Map)
@@ -395,7 +395,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                                             "32_BIT_FLOAT", None, 1, "LAST", "FIRST")
         print("Merged raster: {0}".format(out_data))
 
-# Convert csv download to point feature class (e.g. NPDES Discharge Points)
+# Convert csv downloads to point feature class (e.g. NPDES Discharge Points)
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
     if row['Source Data Type'] == 'CSV':
         print("Running xy table to point...")
