@@ -3,9 +3,9 @@
     "",
     "\\Data-Downloader",
     "\\GIS-Library-Documenter",
+    "\\Map-Packet",
     "\\NCRN-Data-Standard-Create",
     "\\Summarize-Watersheds"
   ],
-  "SelectedNode": "\\NCRN-Data-Standard-Create\\create_ncrn_gis_standard.py",
   "PreviewInSolutionExplorer": false
 }
