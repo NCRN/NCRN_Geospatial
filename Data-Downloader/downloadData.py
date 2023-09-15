@@ -55,15 +55,16 @@ Set various global variables. Some of these could be parameterized to be used in
 ArcGIS Toolbox script and/or command line use. 
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
-__ROOT_DIR = r'C:\Users\goettel\Downloads\NCRN Data Management - Geospatial' ## Set the directory path to the root directory that will be the destination for downloads. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+__ROOT_DIR = r'C:\Users\goettel\Downloads\Geospatial_Copy' ## Set the directory path to the root directory that will be the destination for downloads. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+__XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN_GIS_Data_Sources.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
 # Specify the ArcGIS Online credentials to use.
 # DELETE BEFORE COMMITING TO GITHUB
 print("Connecting to ArcGIS Online...")
 try:
-    gis = GIS("https://arcgis.com", "Username", "Password")
-    print("Connected")
+    #gis = GIS("https://arcgis.com", "Username", "Password")
+    gis = GIS("https://arcgis.com", "ncrndata", "NCRN@g0|d@t@2023!")
+    print("Connected.")
 except:
     print("Not connected")
 
@@ -105,7 +106,11 @@ def download_url_wget(out_dir, url):
     # Print status to Python console with start time
     print("'{0}' is downloading...Please be patient!\nStart time: {1}\n".format(url.split('/')[-1], str(datetime.datetime.time(start_dtm))))
     # Call the wget.download function with the url and output directory as variables
-    wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
+    try:
+        wget.download(url=url, out=out_dir, bar=download_progress_bar_custom)
+    except Exception as e:
+            print("Could not download {}".format(url.split('/')[-1], str(datetime.datetime.time(start_dtm))))
+            print(e)
     # Create a datetime object for current date/time after download
     end_dtm = datetime.datetime.now()
     # Create a variable to store the time elapsed during download
@@ -150,7 +155,7 @@ def Clear_Folder(folder_path):
             os.remove(fullpath_filename)
             print("Deleted download: {0}".format(filename))
 
-def Write_Date_to_Text_File(dest_dir):
+def Write_Date_to_Text_File(filename, dest_dir):
     """
     Writes date of a download to a text file in the same folder
     """
@@ -228,11 +233,15 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
                     print("Deleted download: {0}".format(fullpath_foldername))
         except Exception:
             pass
-        
-# Download activated URLs
-print("Downloading URLs...")
+
+# Create an empty list to append content that couldn't be downloaded        
+Issue_List = []
+
+# Download URLs
+print("Downloading activated URLs...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if ((row['Status'] == 'URL') & (row['Activated'] == 'Yes')):
+    # Download activated URLs
+    if ((row['Avaliability'] == 'URL') & (row['Activated'] == 'Yes')):
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory']) ## Destination in the directory where the download will be sent
         if row['Source Type'] == 'Dataset':
             url = row['Web File for Download']
@@ -240,61 +249,87 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
             fullpath_filename = os.path.join(dest_dir, filename) ## Folder path and name of the download
             download_url_wget(dest_dir, url)
             if filename.endswith('.zip'):
-                shutil.unpack_archive(fullpath_filename, dest_dir)
-                print("Unzipped: {0}.\n".format(fullpath_filename))
-                ## delete zip file after extract
-                os.remove(fullpath_filename)
-        # Download multi-item URLs (e.g. 3DEP Contours)
-        elif row['Source Type'] == 'Datasets':
-                # Convert string of items to parsable list
-                items_str = row['Items']
-                items_list = Convert(items_str)
-                for item in items_list:
-                    url = os.path.join(row['Web File for Download'], item)
-                    filename = url.split('/')[-1]
-                    fullpath_filename = os.path.join(dest_dir, filename)
-                    download_url_wget(dest_dir, url)
-                    if filename.endswith('.zip'):
+                try:
                         shutil.unpack_archive(fullpath_filename, dest_dir)
                         print("Unzipped: {0}.\n".format(fullpath_filename))
                         ## delete zip file after extract
                         os.remove(fullpath_filename)
-#Write_Date_to_Text_File(dest_dir)
+                        Write_Date_to_Text_File(filename, dest_dir)
+                except Exception as e:
+                    print("Could not unzip {}".format(fullpath_filename))
+                    print(e)
+                    Issue_List.append(fullpath_filename)
+        # Download multi-item URLs (e.g. 3DEP Contours)
+        elif row['Source Type'] == 'Datasets':
+            # Convert string of items to parsable list
+            items_str = row['Items']
+            items_list = Convert(items_str)
+            for item in items_list:
+                url = os.path.join(row['Web File for Download'], item)
+                filename = url.split('/')[-1]
+                fullpath_filename = os.path.join(dest_dir, filename)
+                download_url_wget(dest_dir, url)
+                if filename.endswith('.zip'):
+                    try:
+                        shutil.unpack_archive(fullpath_filename, dest_dir)
+                        print("Unzipped: {0}.\n".format(fullpath_filename))
+                        ## delete zip file after extract
+                        os.remove(fullpath_filename)
+                        Write_Date_to_Text_File(filename, dest_dir)
+                    except Exception as e:
+                        print("Could not unzip {}".format(fullpath_filename))
+                        print(e)
+                        Issue_List.append(fullpath_filename)
 
-# Download activated feature service items from ArcGIS Online
+# Download AGOL content
 print("Downloading feature service items from ArcGIS Online...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if ((row['Status'] == 'AGOL') & (row['Activated'] == 'Yes')):
+    if ((row['Avaliability'] == 'AGOL') & (row['Activated'] == 'Yes')):
         dest_dir = os.path.join(__ROOT_DIR, row['Local Directory'])
         data_item_id = row['Data Item ID']
-        data_item = gis.content.get(data_item_id)
-        if row['Source Data Type'] == 'FileGeodatabase':       
-            data_item.get_data()
-            filename = data_item.download(dest_dir)
-            ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
-            fullpath_filename = os.path.join(dest_dir, filename)
-            if filename.endswith('.zip'):
-                shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
-                print("unzipped: {0}.\n".format(fullpath_filename))
-                ## delete zip file after extract
-                os.remove(fullpath_filename)
+        # Feature service items with geodatabase as the only format option
+        if row['File Type'] == 'FileGeodatabase':
+            try:
+                data_item = gis.content.get(data_item_id)
+                data_item.get_data()
+                filename = data_item.download(dest_dir)
+                ext_dir_name = os.path.join(dest_dir, os.path.splitext(filename)[0])
+                fullpath_filename = os.path.join(dest_dir, filename)
+                if filename.endswith('.zip'):
+                    shutil.unpack_archive(fullpath_filename, os.path.join(dest_dir, ext_dir_name))
+                    print("unzipped: {0}.\n".format(fullpath_filename))
+                    ## delete zip file after extract
+                    os.remove(fullpath_filename)
+                    Write_Date_to_Text_File(filename, dest_dir)
+            except Exception as e:
+                print("Could not get gis content for {}".format(data_item_id))
+                print(e)
+                Issue_List.append(data_item_id)
         # Feature service items with multiple download format options
-        elif row['Source Data Type'] == 'Multiple (FileGeodatabase)':
-            data_item = data_item.export(title = data_item_id, export_format = 'FileGeodatabase', wait = True)
-            data_item.get_data()
-            filename = data_item.download(dest_dir)
-            fullpath_filename = os.path.join(dest_dir, filename)
-            if filename.endswith('.zip'):
-                shutil.unpack_archive(fullpath_filename, dest_dir)
-                print("unzipped: {0}.\n".format(fullpath_filename))  
-                ## delete zip file after extract
-                os.remove(fullpath_filename) 
-#Write_Date_to_Text_File(dest_dir)
+        elif row['File Type'] == 'Multiple (FileGeodatabase)':
+            try:
+                data_item = data_item.export(title = data_item_id, export_format = 'FGDB', wait = True)
+                data_item.get_data()
+                filename = data_item.download(dest_dir)
+                fullpath_filename = os.path.join(dest_dir, filename)
+                if filename.endswith('.zip'):
+                    shutil.unpack_archive(fullpath_filename, dest_dir)
+                    print("unzipped: {0}.\n".format(fullpath_filename))  
+                    ## delete zip file after extract
+                    os.remove(fullpath_filename) 
+                    Write_Date_to_Text_File(filename, dest_dir)
+            except Exception as e:
+                print("Could not get gis content for {}".format(data_item_id))
+                print(e)
+                Issue_List.append(data_item_id)
+
+print("Downloads that raised issues: {0}", format(Issue_List))
 
 # Rename the specififed geodatabases
 print("Checking for geodatabases to rename...")
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if ((row['ID'] == 3) or (row['ID'] == 68) or (row['ID'] == 69)): ## Select geodatabases to rename using row ID
+    #if ((row['ID'] == 3) or (row['ID'] == 68) or (row['ID'] == 69)): ## Select geodatabases to rename using row ID
+    if ((row['ID'] == 3) or (row['ID'] == 68)): ## Select geodatabases to rename using row ID
         fullpath_fgdbname = os.path.join(__ROOT_DIR, row['Local Directory'], row['Original GDB Name'])
         arcpy.env.workspace = os.path.join(__ROOT_DIR, row['Local Directory'])
         in_data = row['Original GDB Name']
@@ -397,7 +432,7 @@ for index, row in df_NCRN_GIS_Data_Sources.iterrows():
 
 # Convert csv downloads to point feature class (e.g. NPDES Discharge Points)
 for index, row in df_NCRN_GIS_Data_Sources.iterrows():
-    if row['Source Data Type'] == 'CSV':
+    if row['File Type'] == 'CSV':
         print("Running xy table to point...")
         out_data_str = row['New File Names']
         out_data_list = Convert(out_data_str)
