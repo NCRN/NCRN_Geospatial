@@ -63,7 +63,6 @@ __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN_GIS_Data_Sour
 print("Connecting to ArcGIS Online...")
 try:
     #gis = GIS("https://arcgis.com", "Username", "Password")
-    gis = GIS("https://arcgis.com", "ncrndata", "NCRN@g0|d@t@2023!")
     print("Connected.")
 except:
     print("Not connected")
