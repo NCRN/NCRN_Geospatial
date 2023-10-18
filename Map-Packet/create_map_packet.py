@@ -55,6 +55,7 @@ import comtypes.client
 import time
 import fitz
 from os import path
+import win32com.client
 
 print("### GETTING STARTED ###".format())
 
@@ -64,7 +65,7 @@ ArcGIS Toolbox script and/or command line use.
 """
 # Currently hardcoded values that may be parameterized if bundling into a tool
 __ROOT_DIR = r'C:\Users\goettel\DOI\NPS-NCRN-Forest Veg - Documents\General\Field_Maps_2023' ## Set the directory path to the root directory that will be the destination for outputs. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
-__XCEL_LIBRARY = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\NCRN_Veg_Locations_Directions_Master.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
+__XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN_Veg_Locations_Directions_Master.xlsx' ## Create a variable to store the full path to the Excel file. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 directions_template_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\Templates\NCRN\Veg_Map_Packet\Directions_Template.docx' ## Create a variable to store the full path to the Directions template. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 appendix_template_path = r'C:\Users\goettel\DOI\NCRN Data Management - Geospatial\Templates\NCRN\Veg_Map_Packet\Appendix_Template.docx' ## Create a variable to store the full path to the Appendix template. NEED TO UPDATE PREFIX TO YOUR ONEDRIVE ACCOUNT
 
@@ -100,18 +101,34 @@ def create_blank_docx(folder_path, map_list):
         fullpath_filename = os.path.join(folder_path, filename)
         document.save(fullpath_filename)
 
+#def covx_to_pdf(input_fullpath_filename, output_fullpath_filename):
+#    """
+#    Convert a Word (.docx) to PDF (.pdf)
+#    Requires the full file path of the input .docx and the output PDF
+#    """
+#    wdFormatPDF = 17
+#    word = comtypes.client.CreateObject('Word.Application')
+#    # Keep the program hidden while running in the background
+#    word.Visible = False
+#    doc = word.Documents.Open(input_fullpath_filename)
+#    # add a 7 second delay so that the program doesn't crash
+#    time.sleep(7)
+#    doc.SaveAs(output_fullpath_filename, FileFormat = wdFormatPDF)
+#    doc.Close()
+#    word.Quit()
+
 def covx_to_pdf(input_fullpath_filename, output_fullpath_filename):
     """
     Convert a Word (.docx) to PDF (.pdf)
     Requires the full file path of the input .docx and the output PDF
     """
     wdFormatPDF = 17
-    word = comtypes.client.CreateObject('Word.Application')
+    word = win32com.client.Dispatch('Word.Application')
     # Keep the program hidden while running in the background
     word.Visible = False
     doc = word.Documents.Open(input_fullpath_filename)
-    # add a 7 second delay so that the program doesn't crash
-    time.sleep(7)
+    # add a 15 second delay so that the program doesn't crash
+    time.sleep(15)
     doc.SaveAs(output_fullpath_filename, FileFormat = wdFormatPDF)
     doc.Close()
     word.Quit()

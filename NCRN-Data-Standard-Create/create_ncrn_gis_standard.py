@@ -53,9 +53,9 @@ locations_pt = 'ECO_MonitoringLocations_pt'
 locations_data_pt = 'ECO_MonitoringLocationsData_pt'
 locations_data_ln = 'ECO_MonitoringLocationsData_ln'
 locations_data_py = 'ECO_MonitoringLocationsData_py'
-locations_logistics_pt = 'ECO_MonitoringLocationLogistics_pt'
-locations_logistics_ln = 'ECO_MonitoringLocationLogistics_ln'
-locations_logistics_py = 'ECO_MonitoringLocationLogistics_py'
+locations_logistics_pt = 'ECO_MonitoringLocationsLogistics_pt'
+locations_logistics_ln = 'ECO_MonitoringLocationsLogistics_ln'
+locations_logistics_py = 'ECO_MonitoringLocationsLogistics_py'
 
 ## Read excel into dataframes using Pandas
 df_domains = pd.read_excel(__XCEL_LIBRARY, sheet_name='domains')
