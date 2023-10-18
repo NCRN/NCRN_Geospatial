@@ -60,6 +60,7 @@ __XCEL_LIBRARY = r'C:\Users\goettel\OneDrive - DOI\Geospatial\NCRN_GIS_Data_Sour
 
 # Specify the ArcGIS Online credentials to use.
 # DELETE BEFORE COMMITING TO GITHUB
+# To run this code, uncomment line 66 and hardcode the `ncrndata` AGOL user credentials into the "Username" and "Password" parameters.
 print("Connecting to ArcGIS Online...")
 try:
     #gis = GIS("https://arcgis.com", "Username", "Password")
